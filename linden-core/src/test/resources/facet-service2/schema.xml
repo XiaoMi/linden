@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<schema>
+    <table id="id">
+        <column index="yes" name="Language" tokenize="no" type="string"/>
+        <column name="Author" type="facet" hierarchical="no"/>
+        <column name="PublishDate" type="facet" />
+        <column name="Price" type="long" docvalues="yes" />
+    </table>
+</schema>

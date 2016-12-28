@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<schema>
+    <table id="id">
+        <column docvalues="no" index="yes" multi="no" name="groupid" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="string"/>
+        <column docvalues="no" index="yes" multi="no" name="category" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="string"/>
+        <column docvalues="no" index="yes" multi="no" name="mileage" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="long"/>
+        <column docvalues="no" index="yes" multi="no" name="price" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="long"/>
+        <column docvalues="no" index="yes" multi="no" name="color" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="facet"/>
+        <column docvalues="no" index="yes" multi="no" name="year" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="facet"/>
+        <column docvalues="no" index="yes" multi="no" name="makemodel" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="facet"/>
+        <column docvalues="no" index="yes" multi="no" name="city" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="no" type="facet"/>
+        <column docvalues="no" index="yes" multi="no" name="tags" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="yes" type="string"/>
+        <column docvalues="no" index="yes" multi="no" name="contents" omitfreqs="no" omitnorms="no" snippet="no" store="yes" tokenize="yes" type="string"/>
+    </table>
+</schema>

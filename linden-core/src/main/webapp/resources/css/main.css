@@ -1,0 +1,54 @@
+/* for ACE */
+.ace_editor {
+    height: 200px;
+}
+.ace-wrapper {
+    min-height: 300px;
+    font-size: 14px;
+}
+.ace-container {
+    /*margin-left: 14px;*/
+    margin-bottom: 10px;
+    padding: 6px;
+    border: hsl(0, 10%, 80%) 1px solid;
+    /*border-radius: 5px;*/
+}
+
+/* minifrontend page */
+.minifrontend .row+.row {
+    margin-top: 10px;
+}
+.minifrontend .control-container {
+    padding-top: 20px;
+    background: none repeat scroll 0 0 #eeeeee;
+}
+.minifrontend .result-container {
+    margin-left: 20px;
+}
+.minifrontend .result-list {
+    background-color: #e6e6fa;
+}
+.minifrontend .result-fields {
+    font-size: 18px;
+}
+.minifrontend .result-index {
+    color: #20b2aa;
+}
+.minifrontend .result-score {
+    color: #ff0000;
+}
+.minifrontend .result-field1 {
+    font-weight: bold;
+}
+.minifrontend .result-field2, .minifrontend .result-field3 {
+    color: #0000ff;
+}
+.minifrontend .debug-info {
+    background-color: #8fbc8f;
+}
+.minifrontend .debug-info-check {
+    text-align: right;
+}
+.minifrontend .tabbable {
+    margin-top: 10px;
+}

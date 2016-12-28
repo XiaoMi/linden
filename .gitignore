@@ -1,0 +1,6 @@
+*.iml
+.DS_Store
+.arcconfig
+.classpath
+.idea
+target

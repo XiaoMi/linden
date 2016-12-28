@@ -1,0 +1,19 @@
+{
+  "name": "angular-ui-ace",
+  "version": "0.1.1",
+  "main": "./ui-ace.js",
+  "dependencies": {
+    "angular": "~1.x",
+    "ace-builds": "~1.1.1"
+  },
+  "homepage": "https://github.com/angular-ui/ui-ace",
+  "_release": "0.1.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.1",
+    "commit": "b1753143a632f2900b05e6445e88feff6c17ca2c"
+  },
+  "_source": "git://github.com/angular-ui/ui-ace.git",
+  "_target": "~0.1.0",
+  "_originalSource": "angular-ui-ace"
+}

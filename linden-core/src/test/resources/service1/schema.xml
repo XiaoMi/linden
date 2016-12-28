@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<schema>
+    <table id="id">
+        <column index="yes" name="sName" omitnorms="no" snippet="no" store="no" docvalues="yes" tokenize="yes" type="string"/>
+        <column index="yes" name="address" omitnorms="no" snippet="no" store="yes" tokenize="yes" type="string"/>
+        <column index="yes" name="catId" omitnorms="no" snippet="no" store="yes" tokenize="no" type="integer"/>
+        <column index="yes" name="latitude" omitnorms="no" snippet="no" store="yes" tokenize="no" type="double"/>
+        <column index="yes" name="longitude" omitnorms="no" snippet="no" store="yes" tokenize="no" type="double"/>
+    </table>
+</schema>

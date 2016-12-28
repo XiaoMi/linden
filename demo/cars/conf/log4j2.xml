@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration status="OFF">
+    <appenders>
+        <RollingFile name="common" fileName="${sys:log.path}/linden.log"
+                     filePattern="${sys:log.path}/linden-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p %M(%F:%L) - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <!--SizeBasedTriggeringPolicy size="100 MB" /-->
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+        <RollingFile name="error" fileName="${sys:log.path}/linden-error.log"
+                     filePattern="${sys:log.path}/linden-error-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p %M(%F:%L) - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <!--SizeBasedTriggeringPolicy size="100 MB" /-->
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+        <RollingFile name="index" fileName="${sys:log.path}/linden-index.log"
+                     filePattern="${sys:log.path}/linden-index-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p %M(%F:%L) - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <!--SizeBasedTriggeringPolicy size="100 MB" /-->
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
+    </appenders>
+    <loggers>
+        <root level="info">
+            <appender-ref ref="common"/>
+            <appender-ref ref="error" level="error" />
+        </root>
+        <Logger name="com.xiaomi.linden.core.indexing" level="info" additivity="false">
+            <AppenderRef ref="index" level="info" />
+            <AppenderRef ref="common" level="error" />
+        </Logger>
+    </loggers>
+</configuration>

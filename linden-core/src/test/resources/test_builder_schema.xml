@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<schema>
+    <table id="aid">
+        <column index="yes" name="display_name" type="text" snippet="yes" omitfreqs="yes"/>
+        <column index="yes" name="display_name_py" type="text"/>
+        <column index="yes" name="introduction" type="text"/>
+        <column index="yes" name="keywords" type="text"/>
+        <column index="yes" name="publisher" type="text"/>
+        <column index="yes" name="package_name" type="text"/>
+        <column name="app_rank" type="float"/>
+        <column name="suitable_type" type="int"/>
+        <column name="publish_date" type="facet"/>
+    </table>
+</schema>

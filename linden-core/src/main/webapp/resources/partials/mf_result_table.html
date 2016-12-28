@@ -1,0 +1,36 @@
+<div class="minifrontend col-md-12">
+    <div class="widget-content nopadding">
+        <div class="widget-content" style="background-color: #e6e6fa;overflow-x:auto;overflow-y:hidden;">
+            <div class="result-brief" ng-show="header.error">
+                <p>Error:{{ header.error }}</p>
+            </div>
+            <div class="result-brief" ng-show="header.cost">
+                <p>Cost: {{ header.cost }} ms, Hits: {{ header.totalHits }}</p>
+                <p>QueryInfo:{{ header.queryInfo }}</p>
+            </div>
+            <div class="facet-results" ng-show="header.facetResults">
+                <p>FacetResults:<pre>{{ header.facetResults }}</pre></p>
+            </div>
+            <div class="aggregation-results" ng-show="header.aggregationResults">
+                <p>AggregationResults:<pre>{{ header.aggregationResults }}</pre></p>
+            </div>
+            <table class="table table-bordered" ng-show="header.cost">
+                <tr>
+                    <th ng-repeat="field in titles track by $index">{{ field }}</th>
+                </tr>
+                <tbody ng-repeat="hit in hits">
+                <tr class="result-body">
+                    <td ng-repeat="info in hit.infos track by $index">{{ info }}</td>
+                </tr>
+                <tr id="index{{ $index }}" dis="explain" ng-show="{{ explain }}">
+                    <td colspan="{{ titles.length }}">
+                        <div class="debug-info">
+                            <xmp>{{ hit.explanation }}</xmp>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

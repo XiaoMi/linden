@@ -1,0 +1,12 @@
+<div class="row-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div ng-model="params.bql" ui-ace="ace.bqlEditorOptions"
+                 class="ace-wrapper ace-container"></div>
+        </div>
+        <div class="col-md-12">
+            <button class="btn btn-primary" ng-click="onSearchClick()">Search</button>
+        </div>
+        <div mf-result-table header="result" titles="global.titles" hits="global.hits" explain="explain"></div>
+    </div>
+</div>

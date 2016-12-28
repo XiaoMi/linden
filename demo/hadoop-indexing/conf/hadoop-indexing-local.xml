@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>linden.num.shards</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>linden.input.dir</name>
+        <value>data</value>
+    </property>
+    <property>
+        <name>linden.output.dir</name>
+        <value>target/output</value>
+    </property>
+    <property>
+        <name>linden.index.path</name>
+        <value>target/index</value>
+    </property>
+    <property>
+        <name>linden.schema.file.url</name>
+        <value>conf/schema.xml</value>
+    </property>
+    <property>
+        <name>linden.properties.file.url</name>
+        <value>conf/linden.properties</value>
+    </property>
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>local</value>
+    </property>
+    <property>
+        <name>fs.defaultFS</name>
+        <value>file:///</value>
+    </property>
+</configuration>

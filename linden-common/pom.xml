@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>linden-parent</artifactId>
+        <groupId>com.xiaomi.linden</groupId>
+        <version>0.0.2-SNAPSHOT</version>
+        <relativePath>../linden-parent/pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>linden-common</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>finagle-thrift_2.10</artifactId>
+            <version>${finagle.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.adyliu</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>2.1.1</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+</project>

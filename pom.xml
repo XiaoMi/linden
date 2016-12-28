@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xs">
+    <modelVersion>4.0.0</modelVersion>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+    </dependencies>
+
+    <parent>
+        <groupId>com.xiaomi.linden</groupId>
+        <artifactId>linden-parent</artifactId>
+        <version>0.0.2-SNAPSHOT</version>
+        <relativePath>linden-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>linden-project</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>linden-parent</module>
+        <module>linden-thrift</module>
+        <module>linden-bql</module>
+        <module>linden-common</module>
+        <module>linden-plugins</module>
+        <module>linden-core</module>
+        <module>linden-java-client</module>
+        <module>linden-hadoop-indexing</module>
+        <module>demo</module>
+    </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+                <configuration>
+                    <skip>true</skip>
+                    <!-- No need to deploy the reactor -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>distro-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>linden-${project.version}</finalName>
+                            <descriptors>
+                                <descriptor>resources/release.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.2</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

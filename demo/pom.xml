@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       http://maven.apache.org/xs">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.xiaomi.linden</groupId>
+        <artifactId>linden-parent</artifactId>
+        <version>0.0.2-SNAPSHOT</version>
+        <relativePath>../linden-parent/pom.xml</relativePath>
+    </parent>
+    
+    <artifactId>demo</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>cars</module>
+        <module>hadoop-indexing</module>
+    </modules>
+
+</project>
+
