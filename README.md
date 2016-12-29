@@ -7,21 +7,12 @@ Linden is a distributed and real-time search system built on top of Lucene. Lind
 
 ## Get Started 
 
-Linden is built using [Apache Maven](http://maven.apache.org/).
-
-Build
-    `$ mvn clean package -DskipTests`
-
-Start Zookeeper
-    `$ sh ./bin/start-zk-server.sh &`  or `> .\bin\start-zk-server.cmd`  in windows OS
-
-Start Linden
-    `$ sh ./bin/start-linden-server.sh demo/cars/conf/`  or `> .\bin\start-linden-server.cmd  demo/cars/conf/`  in windows OS
-
-Play 
-    Play the demo at [http://localhost:10000](http://localhost:10000).
-
-See more in [Linden Demo Document](docs/LindenDemo.md).
+*   git clone https://github.com/XiaoMi/linden.git
+*   cd to root directory of linden source code
+*  `$ mvn clean package -DskipTests`
+*  `$ sh ./bin/start-zk-server.sh &` or run `> .\bin\start-zk-server.cmd`  in windows OS
+*  `$ sh ./bin/start-linden-server.sh demo/cars/conf/`  or  run `> .\bin\start-linden-server.cmd  demo/cars/conf/` in windows OS
+*   Play the demo at [http://localhost:10000](http://localhost:10000)
 
 ## Linden Overview
 

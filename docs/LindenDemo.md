@@ -1,10 +1,10 @@
 ###Get started
-*	git clone git@github.com:XiaoMi/Linden.git
+*   git clone https://github.com/XiaoMi/linden.git
 *   cd to root directory of linden source code
 *  `$ mvn clean package -DskipTests`
 *  `$ sh ./bin/start-zk-server.sh &` or run `> .\bin\start-zk-server.cmd`  in windows OS
 *  `$ sh ./bin/start-linden-server.sh demo/cars/conf/`  or  run `> .\bin\start-linden-server.cmd  demo/cars/conf/` in windows OS
-*   Access  [http://localhost:10000](http://localhost:10000) and play the demo
+*   Play the demo at [http://localhost:10000](http://localhost:10000)
 
 ###Demo config
 [http://localhost:10000/#/config/](http://localhost:10000/#/config/) displays this demo configuration
