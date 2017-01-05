@@ -1,5 +1,5 @@
 
-When Linden starts, it need a configuration file named "linden.properites" in configuration dir. It specifies all configurable properties in linden.
+When Linden starts, it need a configuration file named "linden.properties" in configuration dir. It specifies all configurable properties in linden.
  
 Properties | Default Value | Description | Required
 ------------- | ------------- | ------------- | -------------
@@ -30,5 +30,5 @@ search.similarity.class | null | Similarity plugin, default similarity is <br>  
 index.analyzer.class | null | Index analyzer plugin, default index analyzer is lucene standard analyzer. See [Linden Plugin Document](LindenPlugin.md) | N
 search.analyzer.class | null | Search analyzer plugin, default search analyzer is lucene standard analyzer. See [Linden Plugin Document](LindenPlugin.md) | N
 linden.metric.class | null | Linden metric plugin, which report linden performance data. See [Linden Plugin Document](LindenPlugin.md) | N
-inden.warmer.class | null | Linden warmer plugin, which will warm linden before linden really serves traffic in restart stage. See [Linden Plugin Document](LindenPlugin.md) | N
+linden.warmer.class | null | Linden warmer plugin, which will warm linden before linden really serves traffic in restart stage. See [Linden Plugin Document](LindenPlugin.md) | N
 merge.policy.class | null | Index merge policy plugin. See [Linden Plugin Document](LindenPlugin.md) | N
