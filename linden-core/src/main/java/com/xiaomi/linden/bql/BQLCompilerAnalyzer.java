@@ -855,8 +855,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         return;
       }
       if (ctx.python_style_value().value() != null) {
-        String value = String.valueOf(valProperty.get(ctx.python_style_value().value()));
         if (ctx.python_style_value().value().PLACEHOLDER() == null) {
+          String value = String.valueOf(valProperty.get(ctx.python_style_value().value()));
           switch (type) {
             case STRING:
             case FACET:
@@ -1433,16 +1433,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
 
   @Override
   public void exitPython_style_value(BQLParser.Python_style_valueContext ctx) {
-    if (ctx.value() != null) {
-      if (ctx.value().numeric() != null) {
-        valProperty.put(ctx.value(), ctx.value().getText());
-      } else if (ctx.value().STRING_LITERAL() != null) {
-        valProperty.put(ctx.value(), valProperty.get(ctx.value()));
-      }
-    } else if (ctx.python_style_list() != null) {
-      valProperty.put(ctx.python_style_list(), valProperty.get(ctx.python_style_list()));
-    } else if (ctx.python_style_dict() != null) {
-      valProperty.put(ctx.python_style_dict(), valProperty.get(ctx.python_style_dict()));
+    if (ctx.value() != null && ctx.value().numeric() != null) {
+      valProperty.put(ctx.value(), ctx.value().getText());
     }
   }
 
@@ -1453,8 +1445,11 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
       if (subCtx.value() != null) {
         values.add(subCtx.value().getText());
       } else if (subCtx.python_style_list() != null) {
+        throw new ParseCancellationException(
+            new SemanticException(subCtx.python_style_list(), "Nested list is not supported"));
       } else if (subCtx.python_style_dict() != null) {
-        // todo
+        throw new ParseCancellationException(
+            new SemanticException(subCtx.python_style_dict(), "Dict list is not supported"));
       }
     }
     valProperty.put(ctx, values);
