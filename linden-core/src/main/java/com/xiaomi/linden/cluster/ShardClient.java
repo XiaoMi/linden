@@ -18,9 +18,9 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.zkclient.ZkClient;
-import com.google.common.collect.Iterators;
 import com.twitter.finagle.Thrift;
 import com.twitter.thrift.ServiceInstance;
 import com.twitter.util.Future;
@@ -45,6 +44,7 @@ import com.xiaomi.linden.thrift.service.LindenService;
 
 public class ShardClient {
   private static final Logger LOGGER = LoggerFactory.getLogger(ShardClient.class);
+  private static final Random random = new Random();
   private final String zk;
   private final String path;
   private final String localHostPort;
@@ -52,8 +52,7 @@ public class ShardClient {
   private final Integer shardId;
   private final LindenService.ServiceIface localClient;
 
-  private List<LindenService.ServiceIface> clients;
-  private Iterator<LindenService.ServiceIface> clientIter;
+  private volatile List<LindenService.ServiceIface> clients;
 
   public ShardClient(final ZkClient zkClient, final String zk, final String path,
                      final LindenService.ServiceIface localClient, final int localPort, final int shardId) {
@@ -109,25 +108,23 @@ public class ShardClient {
 
         Set<String> uniqueClients = new HashSet<>();
         for (String node : sortedNodes) {
-          if (lindenClients.containsKey(node)) {
-            String hostPort = lindenClients.get(node).getKey();
-            if (uniqueClients.contains(hostPort)) {
-              lindenClients.remove(node);
-              LOGGER.warn("Linden node {} {} is duplicated in shard {}, removed!", node, hostPort, shardId);
-            } else {
-              uniqueClients.add(hostPort);
-            }
+          String hostPort = lindenClients.get(node).getKey();
+          if (uniqueClients.contains(hostPort)) {
+            lindenClients.remove(node);
+            LOGGER.warn("Linden node {} {} is duplicated in shard {}, removed!", node, hostPort, shardId);
+          } else {
+            uniqueClients.add(hostPort);
           }
         }
 
         LOGGER.info("{} Linden node in shard {}.", lindenClients.size(), shardId);
-        clients = new ArrayList<>();
+        List<LindenService.ServiceIface> tempClients = new ArrayList<>();
         for (String node : lindenClients.keySet()) {
-          clients.add(lindenClients.get(node).getValue());
+          tempClients.add(lindenClients.get(node).getValue());
           String hostPort = lindenClients.get(node).getKey();
           LOGGER.info("Linden node {} {} on service in shard {}.", node, hostPort, shardId);
         }
-        clientIter = Iterators.cycle(clients);
+        clients = tempClients;
       }
     });
   }
@@ -149,7 +146,8 @@ public class ShardClient {
     if (haslocalClient) {
       return localClient;
     }
-    return clientIter.next();
+    int index = random.nextInt(clients.size());
+    return clients.get(index);
   }
 
   public Future<LindenResult> search(LindenSearchRequest request) {
