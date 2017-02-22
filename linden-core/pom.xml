@@ -120,6 +120,9 @@
             <artifactId>commons-configuration</artifactId>
             <version>1.6</version>
         </dependency>
+
+        <!-- temporary workaroud for twitter maven repository access issue,
+        finally we should get rid of twitter maven repository -->
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>finagle-serversets_2.10</artifactId>
@@ -129,7 +132,173 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-jdk14</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.twitter.common.zookeeper</groupId>
+                    <artifactId>server-set</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.twitter.common.zookeeper</groupId>
+                    <artifactId>client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.twitter.common.zookeeper</groupId>
+                    <artifactId>group</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common.zookeeper</groupId>
+            <artifactId>server-set</artifactId>
+            <version>1.0.103</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/server-set-1.0.103.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common.zookeeper</groupId>
+            <artifactId>client</artifactId>
+            <version>0.0.76</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/client-0.0.76.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common.zookeeper</groupId>
+            <artifactId>group</artifactId>
+            <version>0.0.90</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/group-0.0.90.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>service-thrift</artifactId>
+            <version>1.0.54</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/service-thrift-1.0.54.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>args</artifactId>
+            <version>0.2.35</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/args-0.2.35.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>net-util</artifactId>
+            <version>0.0.97</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/args-core-0.1.33.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>args-core</artifactId>
+            <version>0.1.33</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/net-util-0.0.97.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>base</artifactId>
+            <version>0.0.112</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/base-0.0.112.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>io</artifactId>
+            <version>0.0.65</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/io-0.0.65.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>io-json</artifactId>
+            <version>0.0.51</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/io-json-0.0.51.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>io-thrift</artifactId>
+            <version>0.0.64</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/io-thrift-0.0.64.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>dynamic-host-set</artifactId>
+            <version>0.0.53</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/dynamic-host-set-0.0.53.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>util</artifactId>
+            <version>0.0.118</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/util-0.0.118.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>collections</artifactId>
+            <version>0.0.106</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/collections-0.0.106.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>quantity</artifactId>
+            <version>0.0.96</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/quantity-0.0.96.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>stats</artifactId>
+            <version>0.0.112</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/stats-0.0.112.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>stat-registry</artifactId>
+            <version>0.0.53</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/stat-registry-0.0.53.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>stats-provider</artifactId>
+            <version>0.0.88</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/stats-provider-0.0.88.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>application-action</artifactId>
+            <version>0.0.87</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/application-action-0.0.87.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>util-sampler</artifactId>
+            <version>0.0.75</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/util-sampler-0.0.75.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>util-system-mocks</artifactId>
+            <version>0.0.101</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/util-system-mocks-0.0.101.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.4</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.kafka</groupId>

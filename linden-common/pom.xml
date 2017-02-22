@@ -17,6 +17,12 @@
             <groupId>com.twitter</groupId>
             <artifactId>finagle-thrift_2.10</artifactId>
             <version>${finagle.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.thrift</groupId>
+                    <artifactId>libthrift</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.adyliu</groupId>

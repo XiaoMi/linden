@@ -14,6 +14,8 @@ Linden is a distributed and real-time search system built on top of Lucene. Lind
 *  `$ sh ./bin/start-linden-server.sh demo/cars/conf/`  or  run `> .\bin\start-linden-server.cmd  demo/cars/conf/` in windows OS
 *   Play the demo at [http://localhost:10000](http://localhost:10000)
 
+Please see more in [Linden Demo Document](docs/LindenDemo.md).
+
 ## Linden Overview
 
 Please see [Linden Overview Document](docs/LindenOverview.md).
