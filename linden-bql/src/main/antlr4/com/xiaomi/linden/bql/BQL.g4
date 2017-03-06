@@ -682,8 +682,7 @@ java_ident
 // Need to handle the conflicts of BQL keywords and common Java method
 // names supported by BQL.
 java_method
-    :   { "contains".equals(_input.LT(1).getText()) }? CONTAINS
-    |   IDENT
+    :   IDENT
     ;
 
 identifier_suffix
@@ -875,7 +874,6 @@ OR_BOOST : [Oo][Rr][Bb][Oo][Oo][Ss][Tt] ;
 SUB_BOOST : [Ss][Uu][Bb][Bb][Oo][Oo][Ss][Tt] ;
 BROWSE : [Bb][Rr][Oo][Ww][Ss][Ee] ;
 BY : [Bb][Yy] ;
-CONTAINS : [Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss] ;
 BYTE : [Bb][Yy][Tt][Ee] ;
 DELETE: [Dd][Ee][Ll][Ee][Tt][Ee] ;
 DISABLE_COORD : [Dd][Ii][Ss][Aa][Bb][Ll][Ee][Cc][Oo][Oo][Rr][Dd] ;

@@ -42,7 +42,7 @@ public class KafkaIndexingManager extends IndexingManager<MessageAndMetadata<byt
         String message = new String(messageAndMetadata.message());
         try {
           indexRequest = LindenIndexRequestParser.parse(lindenConfig.getSchema(), message);
-          LOGGER.info("Parse index request : id={}, rout={}, type={}, content({}/{})={}", indexRequest.getId(),
+          LOGGER.info("Parse index request : id={}, route={}, type={}, content({}/{})={}", indexRequest.getId(),
                       indexRequest.getRouteParam(), indexRequest.getType(), partition, offset, message);
         } catch (IOException e) {
           LOGGER.error("Parse index request failed : {} - {}", message, Throwables.getStackTraceAsString(e));
