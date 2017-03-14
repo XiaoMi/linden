@@ -25,20 +25,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.twitter</groupId>
-            <artifactId>finagle-core_2.10</artifactId>
-            <version>${finagle.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.twitter</groupId>
-            <artifactId>finagle-serversets_2.10</artifactId>
-            <version>${finagle.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk14</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.twitter.common</groupId>
+            <artifactId>service-thrift</artifactId>
+            <version>1.0.54</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/../resources/com.twitter.common/service-thrift-1.0.54.jar</systemPath>
         </dependency>
     </dependencies>
 

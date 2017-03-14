@@ -17,12 +17,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.googlecode.jmockit</groupId>
-            <artifactId>jmockit</artifactId>
-            <version>1.7</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -43,6 +37,11 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>0.5.0-7</version>
         </dependency>
     </dependencies>
 
@@ -103,14 +102,6 @@
             <id>central</id>
             <name>Maven Repository Mirror</name>
             <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>twttr</id>
-            <name>Twitter Repo Mirror</name>
-            <url>http://mirrors.hypo.cn/twttr-maven/</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>

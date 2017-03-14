@@ -35,8 +35,9 @@ public class DefaultShardingStrategy extends ShardingStrategy {
 
     shardCount.set(1);
     List<String> shards = zkClient.getChildren(path);
-    if (shards != null)
+    if (shards != null && shards.size() != 0) {
       shardCount.set(shards.size());
+    }
     zkClient.subscribeChildChanges(path, new IZkChildListener() {
       @Override
       public void handleChildChange(String s, List<String> shards) throws Exception {
