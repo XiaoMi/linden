@@ -443,5 +443,8 @@ public class LindenCoreImpl extends LindenCore {
   @Override
   public void commit() throws IOException {
     indexWriter.commit();
+    if (taxoWriter != null) {
+      taxoWriter.commit();
+    }
   }
 }

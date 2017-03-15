@@ -20,27 +20,19 @@ import org.apache.lucene.index.IndexWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-
 public class CommitStrategy extends Thread {
+
   private static Logger LOGGER = LoggerFactory.getLogger(CommitStrategy.class);
 
   private final IndexWriter indexWriter;
   private final DirectoryTaxonomyWriter taxoWriter;
-  private long maxInterval = 60000;
-  private int maxDocs = 50000;
+  // flush interval 5mins
+  private long maxInterval = 300000;
+  private int docsNumDiffLimit = 50000;
 
   public CommitStrategy(IndexWriter indexWriter, DirectoryTaxonomyWriter taxoWriter) {
     this.indexWriter = indexWriter;
     this.taxoWriter = taxoWriter;
-  }
-
-  public CommitStrategy(IndexWriter indexWriter, DirectoryTaxonomyWriter taxoWriter,
-      int maxInterval, int maxDocs) {
-    this.indexWriter = indexWriter;
-    this.taxoWriter = taxoWriter;
-    this.maxInterval = maxInterval;
-    this.maxDocs = maxDocs;
   }
 
   @Override
@@ -50,20 +42,23 @@ public class CommitStrategy extends Thread {
     while (!Thread.currentThread().isInterrupted()) {
       try {
         Thread.sleep(1000);
-        if (lastDocsNum != indexWriter.numDocs() &&
-            ((indexWriter.numDocs() - lastDocsNum > maxDocs) ||
-                (System.currentTimeMillis() - lastTime > maxInterval))) {
+        if (Math.abs(indexWriter.numDocs() - lastDocsNum) > docsNumDiffLimit
+            || System.currentTimeMillis() - lastTime > maxInterval) {
+          LOGGER.info("Total number of docs: {}", indexWriter.numDocs());
+          LOGGER.info("Number of docs buffered in RAM: {}", indexWriter.numRamDocs());
+          long commitTime = System.currentTimeMillis();
           indexWriter.commit();
           if (taxoWriter != null) {
             taxoWriter.commit();
           }
           lastDocsNum = indexWriter.numDocs();
           lastTime = System.currentTimeMillis();
+          LOGGER.info("Commit took {}ms", lastTime - commitTime);
         }
       } catch (InterruptedException e) {
         break;
-      } catch (IOException e) {
-        LOGGER.error("{}", Throwables.getStackTraceAsString(e));
+      } catch (Exception e) {
+        LOGGER.error("Commit exception: {}", Throwables.getStackTraceAsString(e));
       }
     }
     try {
@@ -71,8 +66,8 @@ public class CommitStrategy extends Thread {
       if (taxoWriter != null) {
         taxoWriter.commit();
       }
-    } catch (IOException e) {
-      LOGGER.error("{}", Throwables.getStackTraceAsString(e));
+    } catch (Exception e) {
+      LOGGER.error("Commit exception: {}", Throwables.getStackTraceAsString(e));
     }
     LOGGER.info("Commit strategy exit");
   }
