@@ -95,7 +95,8 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
     LOGGER.info("Linden warmer : {}", lindenWarmer);
 
     LindenZKPathManager zkPathManager = new LindenZKPathManager(config.getClusterUrl());
-    this.shardingStrategy = new DefaultShardingStrategy(zkPathManager.getZK(), zkPathManager.getClusterPath(), config.getShardId());
+    this.shardingStrategy =
+        new DefaultShardingStrategy(zkPathManager.getZK(), zkPathManager.getClusterPath(), config.getShardId());
 
     JSONObject clusterThreadPoolExecutorConf = null;
     JSONObject instanceThreadPoolExecutorConf = null;
@@ -154,6 +155,10 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
             Thread.sleep(30000);
             LOGGER.info("Cluster thread pool executor status:" + clusterThreadPoolExecutor);
             LOGGER.info("Instance thread pool executor status:" + instanceThreadPoolExecutor);
+            LOGGER.info("JVM memory status: maxMemory {}MB totalMemory {}MB, freeMemory {}MB",
+                        Runtime.getRuntime().maxMemory() / 1024 / 1024,
+                        Runtime.getRuntime().totalMemory() / 1024 / 1024,
+                        Runtime.getRuntime().freeMemory() / 1024 / 1024);
           } catch (InterruptedException e) {
             break;
           }
