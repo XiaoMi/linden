@@ -41,6 +41,10 @@ public class TestLindenSnippet extends TestLindenCoreBase {
           "3",
           "8科技早点:猎豹机版游戏MX2忽视小米1代6",
           "But best may not be good enough."));
+      handleRequest(generateRequest(
+          "4",
+          "新发布的小米6如何? 想买小米6吗? 4月28日开抢小米6. 哪里抢小米6? 告诉你也没用, 反正你都买不到小米6",
+          "小米6号称7年巅峰之作，新一代性能怪兽。中国首发骁龙835处理器+标配6GB内存，安兔兔综合跑分184292，小米6超越再竖立安卓标杆。"));
       lindenCore.commit();
       lindenCore.refresh();
       bqlCompiler = new BQLCompiler(lindenConfig.getSchema());
@@ -61,9 +65,11 @@ public class TestLindenSnippet extends TestLindenCoreBase {
     lindenConfig.setSchema(schema);
     lindenConfig.setSearchAnalyzer("com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
     lindenConfig.setIndexAnalyzer("com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
-    lindenConfig.putToProperties("search.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
+    lindenConfig
+        .putToProperties("search.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
     lindenConfig.putToProperties("search.analyzer.unique", "false");
-    lindenConfig.putToProperties("index.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
+    lindenConfig
+        .putToProperties("index.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
     lindenConfig.putToProperties("index.analyzer.unique", "false");
   }
 
@@ -72,16 +78,19 @@ public class TestLindenSnippet extends TestLindenCoreBase {
     String bql = "SELECT * FROM linden QUERY query is 'title:test' snippet title";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
-    Assert.assertEquals("This is a <b>test</b>. ", result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert.assertEquals("This is a <b>test</b>. Just a <b>test</b> highlighting from postings. ",
+                        result.getHits().get(0).getSnippets().get("title").getSnippet());
     bql = "SELECT * FROM linden QUERY query is 'title:highlighting' snippet title";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
-    Assert.assertEquals("<b>Highlighting</b> the first term. ", result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert.assertEquals("<b>Highlighting</b> the first term. ",
+                        result.getHits().get(0).getSnippets().get("title").getSnippet());
 
     bql = "SELECT * FROM linden QUERY query is 'title:游戏' snippet title";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
-    Assert.assertEquals("8科技早点:猎豹机版<b>游戏</b>MX2忽视小米1代6", result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert
+        .assertEquals("8科技早点:猎豹机版<b>游戏</b>MX2忽视小米1代6", result.getHits().get(0).getSnippets().get("title").getSnippet());
   }
 
   @Test
@@ -89,7 +98,8 @@ public class TestLindenSnippet extends TestLindenCoreBase {
     String bql = "SELECT * FROM linden QUERY query is 'title:test AND body:best' snippet title, body";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
-    Assert.assertEquals("This is a <b>test</b>. ", result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert.assertEquals("This is a <b>test</b>. Just a <b>test</b> highlighting from postings. ",
+                        result.getHits().get(0).getSnippets().get("title").getSnippet());
     Assert.assertEquals("I am hoping for <b>best</b>", result.getHits().get(0).getSnippets().get("body").getSnippet());
   }
 
@@ -110,7 +120,21 @@ public class TestLindenSnippet extends TestLindenCoreBase {
 
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
-    Assert.assertEquals("This is a <b>test</b>. ", result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert.assertEquals("This is a <b>test</b>. Just a <b>test</b> highlighting from postings. ",
+                        result.getHits().get(0).getSnippets().get("title").getSnippet());
     Assert.assertEquals("I am hoping for <b>best</b>", result.getHits().get(0).getSnippets().get("body").getSnippet());
+  }
+
+  @Test
+  public void passageLimitTest() throws IOException {
+    String bql = "SELECT * FROM linden QUERY query is 'title:小米6' or query is 'body:小米6' snippet title, body";
+    LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
+    LindenResult result = lindenCore.search(request);
+    Assert.assertEquals(
+        "新发布的<b>小米</b><b>6</b>如何? 想买<b>小米</b><b>6</b>吗? 4月28日开抢<b>小米</b><b>6</b>. 哪里抢<b>小米</b><b>6</b>? 告诉你也没用, 反正你都买不到<b>小米</b><b>6</b>",
+        result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert.assertEquals(
+        "<b>小米</b><b>6</b>号称7年巅峰之作，新一代性能怪兽。中国首发骁龙835处理器+标配6GB内存，安兔兔综合跑分184292，<b>小米</b><b>6</b>超越再竖立安卓标杆。",
+        result.getHits().get(0).getSnippets().get("body").getSnippet());
   }
 }

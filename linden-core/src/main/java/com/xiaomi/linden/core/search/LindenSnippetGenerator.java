@@ -49,7 +49,7 @@ public class LindenSnippetGenerator {
       docIds[i] = hits[i].doc;
     }
     int maxPassages[] = new int[snippetParam.getFieldsSize()];
-    Arrays.fill(maxPassages, 1);
+    Arrays.fill(maxPassages, 10);
     try {
       Map<String, String[]> snippets = highlighter.highlightFields(fields, query, searcher, docIds, maxPassages);
       lindenHits = getSnippetHits(lindenHits, snippets);
