@@ -266,7 +266,8 @@ public class CoreLindenCluster extends LindenCluster {
       }
     } catch (Exception e) {
       LOGGER.error("Failed to get results from all nodes, exception: {}", Throwables.getStackTraceAsString(e));
-      return new LindenResult().setSuccess(false).setError(Throwables.getStackTraceAsString(e));
+      return new LindenResult().setSuccess(false)
+          .setError("Failed to get results from all nodes, " + Throwables.getStackTraceAsString(e));
     }
     return ResultMerger.merge(request, resultList);
   }

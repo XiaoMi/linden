@@ -39,9 +39,14 @@ import com.xiaomi.linden.thrift.common.LindenSortField;
 import com.xiaomi.linden.thrift.common.QueryInfo;
 
 public class ResultMerger {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ResultMerger.class);
   private static final LindenResult EMPTY_RESULT = new LindenResult().setSuccess(false).
       setError("Linden result list is empty in ResultMerger").setHits(new ArrayList<LindenHit>())
+      .setCost(0).setQueryInfo(new QueryInfo("error")).setTotalHits(0);
+
+  private static final LindenResult ALL_SHARDS_FAILED_RESULT = new LindenResult().setSuccess(false).
+      setError("All shards failed").setHits(new ArrayList<LindenHit>())
       .setCost(0).setQueryInfo(new QueryInfo("error")).setTotalHits(0);
 
   public static LindenResult merge(final LindenSearchRequest lindenRequest, final List<LindenResult> resultList) {
@@ -50,15 +55,23 @@ public class ResultMerger {
     }
 
     Iterator<LindenResult> iterator = resultList.iterator();
+    int failureCount = 0;
+    LindenResult failedResult = null;
     while (iterator.hasNext()) {
       LindenResult result = iterator.next();
       if (!result.isSuccess()) {
+        failureCount++;
+        failedResult = result;
         iterator.remove();
       }
     }
     if (resultList.isEmpty()) {
-      LOGGER.error("all nodes failed for search request {}", lindenRequest.toString());
-      return EMPTY_RESULT;
+      if (failureCount == 1) {
+        LOGGER.error("The shard failed for search request {}", lindenRequest.toString());
+        return failedResult;
+      }
+      LOGGER.error("All shards failed for search request {}", lindenRequest.toString());
+      return ALL_SHARDS_FAILED_RESULT;
     }
 
     LindenResult mergedResult;
@@ -78,7 +91,10 @@ public class ResultMerger {
       Iterable<LindenHit> mergedHits = Iterables.mergeSorted(hits, new LindenHitCmp(sortFields));
       List<LindenHit> topNHits = Lists.newArrayList(mergedHits);
       if (lindenRequest.getOffset() <= topNHits.size()) {
-        List<LindenHit> subHits = topNHits.subList(lindenRequest.getOffset(), Math.min(lindenRequest.getOffset() + lindenRequest.getLength(), topNHits.size()));
+        List<LindenHit>
+            subHits =
+            topNHits.subList(lindenRequest.getOffset(),
+                             Math.min(lindenRequest.getOffset() + lindenRequest.getLength(), topNHits.size()));
         mergedResult.setHits(subHits);
       } else {
         mergedResult.setHits(new ArrayList<LindenHit>());
@@ -88,6 +104,10 @@ public class ResultMerger {
     // Merge facet result
     if (lindenRequest.isSetFacet()) {
       mergeFacet(lindenRequest, resultList, mergedResult);
+    }
+
+    if (failureCount > 0) {
+      mergedResult.setError(failureCount + " shards failed.");
     }
     return mergedResult;
   }
@@ -135,8 +155,9 @@ public class ResultMerger {
         return Double.compare(left.getScore(), right.getScore());
       }
     };
-    List<LindenHit> orderedHits = ordering.greatestOf(mergedResult.getHits(), mergedResult.getHitsSize());
-    //offset -> offset+size groups
+    List<LindenHit>
+        orderedHits =
+        ordering.greatestOf(mergedResult.getHits(), mergedResult.getHitsSize());    //offset -> offset+size groups
     int from = lindenRequest.getOffset();
     int size = lindenRequest.getLength();
     if (from < orderedHits.size()) {
@@ -149,7 +170,7 @@ public class ResultMerger {
   }
 
   private static void mergeFacet(final LindenSearchRequest lindenRequest, final List<LindenResult> resultList,
-      LindenResult mergedResult) {
+                                 LindenResult mergedResult) {
     if (resultList.size() == 1) {
       mergedResult.setFacetResults(resultList.get(0).getFacetResults());
       mergedResult.setAggregationResults(resultList.get(0).getAggregationResults());
