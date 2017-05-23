@@ -131,6 +131,7 @@ public class CoreLindenCluster extends LindenCluster {
         if (!result.isSuccess()) {
           cache.invalidate(request);
         }
+        return result;
       } catch (ExecutionException e) {
         throw new IOException(Throwables.getStackTraceAsString(e));
       }
