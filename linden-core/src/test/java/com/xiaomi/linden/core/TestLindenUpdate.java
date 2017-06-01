@@ -104,7 +104,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":3.5,\"field1\":\"ccc\",\"id\":\"3\",\"rank\":4.5,\"tagnum\":10,\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
+        "{\"cat1\":3,\"cat2\":3.5,\"field1\":\"ccc\",\"id\":\"3\",\"rank\":4.5,\"tagnum\":[10],\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
         result.getHits().get(0).getSource());
 
     handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"tagnum\":[6,7]}}");
