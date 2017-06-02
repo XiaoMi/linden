@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -31,6 +29,9 @@ import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.search.FieldCache;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.Bits;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import com.xiaomi.linden.common.schema.LindenSchemaConf;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
@@ -118,7 +119,7 @@ public class LindenUtil {
       fields.addAll(config.getSchema().getFields());
     }
 
-    Map<String, LindenType> storedFields = new HashMap<>();
+    Map<String, LindenFieldSchema> storedFields = new HashMap<>();
     for (LindenFieldSchema fieldSchema : fields) {
       String name = fieldSchema.getName();
       boolean fieldCache = false;
@@ -140,7 +141,7 @@ public class LindenUtil {
          * multi-field source value can only be retrieved via stored field way
          */
         if (fieldSchema.isStored()) {
-          storedFields.put(name, fieldSchema.getType());
+          storedFields.put(name, fieldSchema);
         }
       } else if (fieldSchema.isDocValues()) {
         fieldCache = true;
@@ -149,14 +150,14 @@ public class LindenUtil {
         if (config.isEnableSourceFieldCache() && !possibleTokenizedString(fieldSchema)) {
           fieldCache = true;
         } else {
-          storedFields.put(name, fieldSchema.getType());
+          storedFields.put(name, fieldSchema);
         }
       } else if(fieldSchema.isIndexed()) {
         if (!possibleTokenizedString(fieldSchema)) {
           fieldCache = true;
         }
       } else if (fieldSchema.isStored()) {
-        storedFields.put(name, fieldSchema.getType());
+        storedFields.put(name, fieldSchema);
       }
 
       if (fieldCache) {
@@ -197,10 +198,17 @@ public class LindenUtil {
       Document doc = indexSearcher.doc(docId, storedFields.keySet());
       for (IndexableField field : doc.getFields()) {
         String name = field.name();
+        LindenFieldSchema schema = storedFields.get(name);
         Object obj = json.get(name);
-        Object val = parseLindenValue(field.stringValue(), storedFields.get(name));
+        Object val = parseLindenValue(field.stringValue(), storedFields.get(name).getType());
         if (obj == null) {
-          json.put(name, val);
+          if (schema.isMulti()) {
+            JSONArray array = new JSONArray();
+            array.add(val);
+            json.put(name, array);
+          } else {
+            json.put(name, val);
+          }
         } else if (obj instanceof JSONArray) {
           ((JSONArray) obj).add(val);
         } else {

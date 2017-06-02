@@ -134,7 +134,7 @@ public class ShardClient {
   }
 
   /**
-   * if there's the replica hash key, select replica by the key; or round-robin
+   * if there's the replica hash key, select replica by the key; or random one
    * @param request
    * @return
    */
