@@ -81,12 +81,13 @@ In factory mode, you need create a sub class of LindenPluginFactory which implem
 	  T getInstance(Map<String,String> params) throws IOException;
 	}
 	 
+
+<br>
+
+Linden provides all lucene native analyzers and two Chinese analyzers(MMSeg4J and Jieba) as index and search analyzer options.
+Index analyzer is used to analyze text when indexing data and search analyzer is used to analyze query when searching. Generally, the two analyzers should be the same one. You can implement your own analyzer in plugin mode by extending ***org.apache.lucene.analysis.Analyzer***.
+
 #####LindenMMSeg4jAnalyzerFactory
-Linden provides all lucene native analyzers and MMSeg4J (for Chinese) analyzer as index and search analyzer options.
-Index analyzer is used to analyze text when indexing data and search analyzer is used to analyze query when searching. Generally, the two analyzers should be same. You can implement your own analyzer in plugin mode by extending ***org.apache.lucene.analysis.Analyzer***.
- 
-Take MMSeg4J analyzer as example,
- 
  
 	public class LindenMMSeg4jAnalyzerFactory implements LindenPluginFactory<LindenMMSeg4jAnalyzer> {
 	  private static final String MODE = "mode";
@@ -110,7 +111,38 @@ Now you can use MMSegAnalyzer to extracting index terms by configuration:
 	index.analyzer.dict=/data/mmseg4j_dict
 	index.analyzer.mode=Complex
 	index.analyzer.cut_letter_digit=true
+
+See MMSeg4J analyzer detail: [https://github.com/chenlb/mmseg4j-solr](https://github.com/chenlb/mmseg4j-solr)
 	
+#####LindenJiebaAnalyzerFactory
+	
+	public class LindenJiebaAnalyzerFactory implements LindenPluginFactory<LindenJiebaAnalyzer> {
+	
+	  private static final String MODE = "mode";
+	  private static final String USER_DICT = "user.dict";
+	
+	  @Override
+	  public LindenJiebaAnalyzer getInstance(Map<String, String> params) throws IOException {
+	    String mode = params.get(MODE);
+	    String userDict = params.get(USER_DICT);
+	    JiebaSegmenter.SegMode segMode = JiebaSegmenter.SegMode.SEARCH;
+	
+	    if (mode != null && mode.equalsIgnoreCase("index")) {
+	      segMode = JiebaSegmenter.SegMode.INDEX;
+	    } else {
+	      segMode = JiebaSegmenter.SegMode.SEARCH;
+	    }
+	    return new LindenJiebaAnalyzer(segMode,userDict);
+	  }
+	}
+
+Jieba Analyzer config example:
+	
+	search.analyzer.class=com.xiaomi.linden.lucene.analyzer.LindenJiebaAnalyzerFactory
+	search.analyzer.mode=search
+	
+See Jieba analyzer detail: [https://github.com/huaban/jieba-analysis](https://github.com/huaban/jieba-analysis)
+
 #####LindenStandardAnalyzerFactory
 ***com.xiaomi.linden.lucene.analyzer.LindenStandardAnalyzerFactory*** is a very simple plugin factory which provides ***org.apache.lucene.analysis.standard.StandardAnalyzer*** with stopwords switch.
 
