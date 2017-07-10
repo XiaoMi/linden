@@ -27,6 +27,10 @@ import com.xiaomi.linden.thrift.common.LindenResult;
 import com.xiaomi.linden.thrift.common.LindenServiceInfo;
 import com.xiaomi.linden.thrift.common.Response;
 
+import org.apache.thrift.TBase;
+import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TSimpleJSONProtocol;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -65,7 +69,7 @@ public class LindenController {
       result = new LindenResult();
       result.setSuccess(false).setError(Throwables.getStackTraceAsString(e));
     }
-    return CommonUtils.ThriftToJSON(result);
+    return ThriftToJSON(result);
   }
 
   @RequestMapping(value = "/index", method = RequestMethod.POST)
@@ -79,7 +83,7 @@ public class LindenController {
       response = new Response();
       response.setSuccess(false).setError(Throwables.getStackTraceAsString(e));
     }
-    return CommonUtils.ThriftToJSON(response);
+    return ThriftToJSON(response);
   }
 
   @RequestMapping(value = "/delete", method = RequestMethod.POST)
@@ -93,6 +97,15 @@ public class LindenController {
       response = new Response();
       response.setSuccess(false).setError(Throwables.getStackTraceAsString(e));
     }
-    return CommonUtils.ThriftToJSON(response);
+    return ThriftToJSON(response);
+  }
+
+  public static <T extends TBase> String ThriftToJSON(T thrift) {
+    TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
+    try {
+      return serializer.toString(thrift);
+    } catch (TException e) {
+    }
+    throw new IllegalStateException("Convert to json failed : " + thrift);
   }
 }

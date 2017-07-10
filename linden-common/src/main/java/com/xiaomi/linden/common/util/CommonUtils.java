@@ -14,13 +14,13 @@
 
 package com.xiaomi.linden.common.util;
 
-import org.apache.thrift.TBase;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TSimpleJSONProtocol;
-
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Random;
 
@@ -48,17 +48,8 @@ public class CommonUtils {
     try {
       return InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
+      throw new IllegalStateException("Couldn't find the local host.", e);
     }
-    throw new IllegalStateException("Couldn't find the local host.");
-  }
-
-  public static <T extends TBase> String ThriftToJSON(T thrift) {
-    TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
-    try {
-      return serializer.toString(thrift);
-    } catch (TException e) {
-    }
-    throw new IllegalStateException("Convert to json failed : " + thrift);
   }
 
   public static String getLocalHostIp() {
@@ -73,6 +64,7 @@ public class CommonUtils {
         }
       }
     } catch (SocketException e) {
+      throw new IllegalStateException("Couldn't find the local machine ip.", e);
     }
     throw new IllegalStateException("Couldn't find the local machine ip.");
   }
