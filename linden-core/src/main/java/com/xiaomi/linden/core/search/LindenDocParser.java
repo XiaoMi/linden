@@ -37,6 +37,7 @@ import com.xiaomi.linden.thrift.common.Coordinate;
 import com.xiaomi.linden.thrift.common.LindenDocument;
 import com.xiaomi.linden.thrift.common.LindenField;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
+import com.xiaomi.linden.thrift.common.LindenType;
 
 public class LindenDocParser {
 
@@ -164,12 +165,17 @@ public class LindenDocParser {
   }
 
   public static boolean isDocValueFields(LindenDocument lindenDoc) {
+    if (lindenDoc.isSetCoordinate()){
+      return false;
+    }
+
     if (!lindenDoc.isSetFields()) {
       return false;
     }
+
     for (LindenField field : lindenDoc.getFields()) {
       LindenFieldSchema schema = field.getSchema();
-      if (!schema.isDocValues()) {
+      if (!schema.isDocValues() || schema.isIndexed() || schema.isStored() || schema.getType() == LindenType.FACET) {
         return false;
       }
     }

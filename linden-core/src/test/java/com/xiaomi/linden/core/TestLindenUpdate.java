@@ -34,11 +34,16 @@ public class TestLindenUpdate extends TestLindenCoreBase {
 
   public TestLindenUpdate() throws Exception {
     try {
-      handleRequest("{\"id\":1, \"title\": \"lucene 1\", \"field1\": \"aaa\", \"rank\": 1.2, \"cat1\":1, \"cat2\":1.5}");
-      handleRequest("{\"id\":2, \"title\": \"lucene 2\", \"field1\": \"bbb\", \"rank\": 4.5, \"cat1\":2, \"cat2\":2.5, \"tagnum\": 100}");
-      handleRequest("{\"id\":3, \"title\": \"lucene 3\", \"field1\": \"ccc\", \"rank\": 4.5, \"cat1\":3, \"cat2\":3.5, \"tagstr\":\"ok\"}");
-      handleRequest("{\"type\": \"index\", \"content\": {\"id\":4, \"title\": \"lucene 4\", \"field1\": \"ddd\", \"rank\": 10.3, \"cat1\":4, \"cat2\":4.5}}");
-      handleRequest("{\"id\":5, \"title\": \"lucene 5\", \"field1\": \"ddd\", \"rank\": 10.3, \"cat1\":5, \"cat2\":5.5}");
+      handleRequest(
+          "{\"id\":1, \"title\": \"lucene 1\", \"field1\": \"aaa\", \"rank\": 1.2, \"cat1\":1, \"cat2\":1.5}");
+      handleRequest(
+          "{\"id\":2, \"title\": \"lucene 2\", \"field1\": \"bbb\", \"rank\": 4.5, \"cat1\":2, \"cat2\":2.5, \"tagnum\": 100}");
+      handleRequest(
+          "{\"id\":3, \"title\": \"lucene 3\", \"field1\": \"ccc\", \"rank\": 4.5, \"cat1\":3, \"cat2\":3.5, \"tagstr\":\"ok\"}");
+      handleRequest(
+          "{\"type\": \"index\", \"content\": {\"id\":4, \"title\": \"lucene 4\", \"field1\": \"ddd\", \"rank\": 10.3, \"cat1\":4, \"cat2\":4.5}}");
+      handleRequest(
+          "{\"id\":5, \"title\": \"lucene 5\", \"field1\": \"ddd\", \"rank\": 10.3, \"cat1\":5, \"cat2\":5.5}");
       handleRequest("{\"type\": \"delete\", \"id\" : \"5\"}");
       lindenCore.commit();
       lindenCore.refresh();
@@ -55,9 +60,12 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     schema.addToFields(new LindenFieldSchema().setName("field1").setDocValues(true));
     schema.addToFields(new LindenFieldSchema().setName("rank").setType(LindenType.FLOAT).setIndexed(true));
     schema.addToFields(new LindenFieldSchema().setName("cat1").setType(LindenType.INTEGER).setStored(true));
-    schema.addToFields(new LindenFieldSchema().setName("cat2").setType(LindenType.DOUBLE).setStored(true).setDocValues(true));
-    schema.addToFields(new LindenFieldSchema().setName("tagstr").setType(LindenType.STRING).setDocValues(true));
-    schema.addToFields(new LindenFieldSchema().setName("tagnum").setType(LindenType.INTEGER).setIndexed(true).setStored(true).setMulti(true));
+    schema.addToFields(new LindenFieldSchema().setName("cat2").setType(LindenType.DOUBLE).setDocValues(true));
+    schema.addToFields(
+        new LindenFieldSchema().setName("tagstr").setType(LindenType.STRING).setIndexed(true).setDocValues(true));
+    schema.addToFields(
+        new LindenFieldSchema().setName("tagnum").setType(LindenType.INTEGER).setIndexed(true).setStored(true)
+            .setMulti(true));
     lindenConfig.setSchema(schema);
     lindenConfig.setEnableSourceFieldCache(true);
   }
@@ -66,7 +74,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
   public void updateDocValueTest() throws Exception {
     // update document id3
     // using default update type: doc_value
-    handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"field1\":\"ccc_c\", \"cat2\":33.5, \"rank\": 4.53}}");
+    handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"field1\":\"ccc_c\", \"cat2\":33.5}}");
 
     lindenCore.refresh();
 
@@ -75,21 +83,19 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":33.5,\"field1\":\"ccc_c\",\"id\":\"3\",\"rank\":4.53,\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
+        "{\"cat1\":3,\"cat2\":33.5,\"field1\":\"ccc_c\",\"id\":\"3\",\"rank\":4.5,\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
         result.getHits().get(0).getSource());
 
-
-    handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"field1\":\"ccc_cc\", \"cat2\":333.5, \"rank\": 4.533}}");
-
+    // this case won't go docvalue path, since tagstr is not only docvalue but also indexed
+    handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"tagstr\":\"not ok\"}}");
     lindenCore.refresh();
-
-    String bql2 = "select * from linden by query is \'title:\"lucene 3\"\' source";
-    LindenSearchRequest request2 = bqlCompiler.compile(bql2).getSearchRequest();
-    LindenResult result2 = lindenCore.search(request2);
-    Assert.assertEquals(1, result2.getHitsSize());
+    bql = "select * from linden where tagstr = 'not ok' source";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":333.5,\"field1\":\"ccc_cc\",\"id\":\"3\",\"rank\":4.533,\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
-        result2.getHits().get(0).getSource());
+        "{\"cat1\":3,\"cat2\":33.5,\"field1\":\"ccc_c\",\"id\":\"3\",\"rank\":4.5,\"tagstr\":\"not ok\",\"title\":\"lucene 3\"}",
+        result.getHits().get(0).getSource());
   }
 
   @Test
@@ -117,7 +123,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
         result.getHits().get(0).getSource());
   }
 
- @Test
+  @Test
   public void updateNonexistentDoc() throws Exception {
     Response response = handleRequest("{\"type\": \"update\", \"content\": {\"id\":6, \"title\":\"lucene 6\"}}");
     Assert.assertFalse(response.isSuccess());
