@@ -2,6 +2,8 @@ package com.xiaomi.linden.lucene.analyzer;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.huaban.analysis.jieba.JiebaSegmenter;
@@ -36,6 +38,15 @@ public class CommonJiebaSegmenter extends LindenSegmenter {
   public List<Term> parse(String content) throws Exception {
     List<SegToken> tokens = this.segmenter.process(content, this.mode);
     List<Term> result = new ArrayList<>();
+    Collections.sort(tokens, new Comparator<SegToken>() {
+      @Override
+      public int compare(SegToken o1, SegToken o2) {
+        if (o1.startOffset != o2.startOffset) {
+          return o1.startOffset - o2.startOffset;
+        }
+        return o1.endOffset - o2.endOffset;
+      }
+    });
     if (tokens.size() != 0) {
       transform(tokens, result);
     }
