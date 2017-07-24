@@ -29,7 +29,7 @@ public class LindenConfigBuilder {
   public static final String INDEX_ANALYZER = "index.analyzer.class";
   public static final String SEARCH_ANALYZER = "search.analyzer.class";
   public static final String SEARCH_SIMILARITY = "search.similarity.class";
-  public static final String SEARCH_TIMEOUT = "search.timeout";
+  public static final String CLUSTER_AWAIT_TIMEOUT = "search.await.timeout";
   public static final String ADMIN_PORT = "admin.port";
   public static final String INDEX_DIRECTORY = "index.directory";
   public static final String CLUSTER_URL = "cluster.url";
@@ -92,7 +92,7 @@ public class LindenConfigBuilder {
     fieldMap.put(LOG_PATH, new FieldInfo("LogPath", String.class));
     fieldMap.put(PLUGIN_PATH, new FieldInfo("PluginPath", String.class));
     fieldMap.put(GATEWAY, new FieldInfo("Gateway", String.class));
-    fieldMap.put(SEARCH_TIMEOUT, new FieldInfo("Timeout", int.class));
+    fieldMap.put(CLUSTER_AWAIT_TIMEOUT, new FieldInfo("ClusterAwaitTimeout", int.class));
     fieldMap.put(ADMIN_PORT, new FieldInfo("AdminPort", int.class));
     fieldMap.put(ENABLE_PARALLEL_SEARCH, new FieldInfo("EnableParallelSearch", boolean.class));
     fieldMap.put(MERGE_POLICY, new FieldInfo("MergePolicy", String.class));

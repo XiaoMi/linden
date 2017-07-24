@@ -65,12 +65,12 @@ public class CoreLindenCluster extends LindenCluster {
   private final LindenZKPathManager zkPathManager;
   private final ShardingStrategy shardingStrategy;
   private LoadingCache<LindenSearchRequest, LindenResult> cache;
-  private int timeout;
+  private int clusterAwaitTimeout;
 
   public CoreLindenCluster(LindenConfig lindenConf, ShardingStrategy shardingStrategy,
                            LindenService.ServiceIface localClient) {
     this.shardingStrategy = shardingStrategy;
-    this.timeout = lindenConf.getTimeout();
+    this.clusterAwaitTimeout = lindenConf.getClusterAwaitTimeout();
     this.localClient = localClient;
     this.lindenConfig = lindenConf;
     zkPathManager = new LindenZKPathManager(lindenConf.getClusterUrl());
@@ -178,10 +178,10 @@ public class CoreLindenCluster extends LindenCluster {
     }
     Future<List<BoxedUnit>> collected = Future.collect(futures);
     try {
-      if (timeout == 0) {
+      if (clusterAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(timeout, TimeUnit.MILLISECONDS));
+        Await.result(collected, Duration.apply(clusterAwaitTimeout, TimeUnit.MILLISECONDS));
       }
       List<String> errors = new ArrayList<>();
       for (Response response : responseList) {
@@ -260,10 +260,10 @@ public class CoreLindenCluster extends LindenCluster {
 
     Future<List<BoxedUnit>> collected = Future.collect(futures);
     try {
-      if (timeout == 0) {
+      if (clusterAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(timeout, TimeUnit.MILLISECONDS));
+        Await.result(collected, Duration.apply(clusterAwaitTimeout, TimeUnit.MILLISECONDS));
       }
     } catch (Exception e) {
       LOGGER.error("Failed to get results from all nodes, exception: {}", Throwables.getStackTraceAsString(e));
@@ -309,10 +309,10 @@ public class CoreLindenCluster extends LindenCluster {
       }
 
       Future<List<BoxedUnit>> collected = Future.collect(futures);
-      if (timeout == 0) {
+      if (clusterAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(timeout, TimeUnit.MILLISECONDS));
+        Await.result(collected, Duration.apply(clusterAwaitTimeout, TimeUnit.MILLISECONDS));
       }
       if (errorInfo.length() > 0) {
         return ResponseUtils.buildFailedResponse("Index failed: " + errorInfo.toString());

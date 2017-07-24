@@ -62,7 +62,7 @@ public class LindenConfig {
   private String gateway;
   private IndexType indexType;
   private String logPath;
-  private int timeout;
+  private int clusterAwaitTimeout;
   private int adminPort;
   private com.xiaomi.linden.thrift.common.LindenSchema schema;
   private String mergePolicy;
@@ -90,7 +90,7 @@ public class LindenConfig {
     this.port = 9090;
     this.shardId = 0;
     this.indexType = IndexType.MMAP;
-    this.timeout = 1000;
+    this.clusterAwaitTimeout = 1000;
     this.enableParallelSearch = true;
     this.cacheDuration = 10;
     this.cacheSize = 50000;
@@ -207,12 +207,12 @@ public class LindenConfig {
     return this;
   }
 
-  public int getTimeout() {
-    return this.timeout;
+  public int getClusterAwaitTimeout() {
+    return this.clusterAwaitTimeout;
   }
 
-  public LindenConfig setTimeout(int timeout) {
-    this.timeout = timeout;
+  public LindenConfig setClusterAwaitTimeout(int timeout) {
+    this.clusterAwaitTimeout = timeout;
     return this;
   }
 
