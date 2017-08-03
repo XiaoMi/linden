@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.xiaomi.linden.core.LindenConfig;
 import com.xiaomi.linden.core.search.LindenCore;
 import com.xiaomi.linden.plugin.gateway.DataProvider;
+import com.xiaomi.linden.thrift.common.IndexRequestType;
 import com.xiaomi.linden.thrift.common.LindenIndexRequest;
 import com.xiaomi.linden.thrift.common.Response;
 
@@ -127,7 +128,8 @@ abstract public class IndexingManager<T> {
           }
           LindenIndexRequest indexRequest = indexRequestParser.apply(data);
           assert indexRequest != null;
-          if (shardingStrategy.accept(indexRequest.getId(), indexRequest.getRouteParam())) {
+          if (indexRequest.getType() == IndexRequestType.DELETE || shardingStrategy
+              .accept(indexRequest.getId(), indexRequest.getRouteParam())) {
             int queueIdx = 0;
             // indexRequest.getId() is null when this is an operation request
             if (indexRequest.getId() != null) {
