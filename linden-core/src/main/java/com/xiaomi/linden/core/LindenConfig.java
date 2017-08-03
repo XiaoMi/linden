@@ -62,7 +62,9 @@ public class LindenConfig {
   private String gateway;
   private IndexType indexType;
   private String logPath;
-  private int clusterAwaitTimeout;
+  private int clusterFutureAwaitTimeout;
+  private int clusterFuturePoolWaitTimeout;
+  private int instanceFuturePoolWaitTimeout;
   private int adminPort;
   private com.xiaomi.linden.thrift.common.LindenSchema schema;
   private String mergePolicy;
@@ -90,7 +92,9 @@ public class LindenConfig {
     this.port = 9090;
     this.shardId = 0;
     this.indexType = IndexType.MMAP;
-    this.clusterAwaitTimeout = 1000;
+    this.clusterFutureAwaitTimeout = 1000;
+    this.clusterFuturePoolWaitTimeout = 200;
+    this.instanceFuturePoolWaitTimeout = 200;
     this.enableParallelSearch = true;
     this.cacheDuration = 10;
     this.cacheSize = 50000;
@@ -207,12 +211,30 @@ public class LindenConfig {
     return this;
   }
 
-  public int getClusterAwaitTimeout() {
-    return this.clusterAwaitTimeout;
+  public int getClusterFutureAwaitTimeout() {
+    return this.clusterFutureAwaitTimeout;
   }
 
-  public LindenConfig setClusterAwaitTimeout(int timeout) {
-    this.clusterAwaitTimeout = timeout;
+  public LindenConfig setClusterFutureAwaitTimeout(int timeout) {
+    this.clusterFutureAwaitTimeout = timeout;
+    return this;
+  }
+
+  public int getClusterFuturePoolWaitTimeout() {
+    return this.clusterFuturePoolWaitTimeout;
+  }
+
+  public LindenConfig setClusterFuturePoolWaitTimeout(int timeout) {
+    this.clusterFuturePoolWaitTimeout = timeout;
+    return this;
+  }
+
+  public int getInstanceFuturePoolWaitTimeout() {
+    return this.instanceFuturePoolWaitTimeout;
+  }
+
+  public LindenConfig setInstanceFuturePoolWaitTimeout(int timeout) {
+    this.instanceFuturePoolWaitTimeout = timeout;
     return this;
   }
 

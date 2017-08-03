@@ -64,12 +64,12 @@ public class CoreLindenCluster extends LindenCluster {
   private final LindenZKPathManager zkPathManager;
   private final ShardingStrategy shardingStrategy;
   private LoadingCache<LindenSearchRequest, LindenResult> cache;
-  private int clusterAwaitTimeout;
+  private int clusterFutureAwaitTimeout;
 
   public CoreLindenCluster(LindenConfig lindenConf, ShardingStrategy shardingStrategy,
                            LindenService.ServiceIface localClient) {
     this.shardingStrategy = shardingStrategy;
-    this.clusterAwaitTimeout = lindenConf.getClusterAwaitTimeout();
+    this.clusterFutureAwaitTimeout = lindenConf.getClusterFutureAwaitTimeout();
     this.localClient = localClient;
     this.lindenConfig = lindenConf;
     zkPathManager = new LindenZKPathManager(lindenConf.getClusterUrl());
@@ -200,10 +200,10 @@ public class CoreLindenCluster extends LindenCluster {
 
     Future<List<BoxedUnit>> collected = Future.collect(futures);
     try {
-      if (clusterAwaitTimeout == 0) {
+      if (clusterFutureAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(clusterAwaitTimeout, TimeUnit.MILLISECONDS));
+        Await.result(collected, Duration.apply(clusterFutureAwaitTimeout, TimeUnit.MILLISECONDS));
       }
       if (errorInfo.length() > 0) {
         return ResponseUtils.buildFailedResponse("Delete failed: " + errorInfo.toString());
@@ -287,10 +287,10 @@ public class CoreLindenCluster extends LindenCluster {
 
     Future<List<BoxedUnit>> collected = Future.collect(futures);
     try {
-      if (clusterAwaitTimeout == 0) {
+      if (clusterFutureAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(clusterAwaitTimeout, TimeUnit.MILLISECONDS));
+        Await.result(collected, Duration.apply(clusterFutureAwaitTimeout, TimeUnit.MILLISECONDS));
       }
     } catch (Exception e) {
       LOGGER.error("Failed to get results from all nodes, exception: {}", Throwables.getStackTraceAsString(e));
@@ -347,10 +347,10 @@ public class CoreLindenCluster extends LindenCluster {
     }
     try {
       Future<List<BoxedUnit>> collected = Future.collect(futures);
-      if (clusterAwaitTimeout == 0) {
+      if (clusterFutureAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(clusterAwaitTimeout, TimeUnit.MILLISECONDS));
+        Await.result(collected, Duration.apply(clusterFutureAwaitTimeout, TimeUnit.MILLISECONDS));
       }
       if (errorInfo.length() > 0) {
         return ResponseUtils.buildFailedResponse("Index failed: " + errorInfo.toString());
