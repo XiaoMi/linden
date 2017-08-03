@@ -24,15 +24,14 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.fastjson.JSONObject;
 import com.github.zkclient.ZkClient;
 import com.twitter.finagle.Thrift;
 import com.twitter.thrift.ServiceInstance;
 import com.twitter.util.Future;
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xiaomi.linden.common.LindenZKListener;
 import com.xiaomi.linden.common.util.CommonUtils;
@@ -43,6 +42,7 @@ import com.xiaomi.linden.thrift.common.Response;
 import com.xiaomi.linden.thrift.service.LindenService;
 
 public class ShardClient {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ShardClient.class);
   private static final Random random = new Random();
   private final String zk;
@@ -52,7 +52,7 @@ public class ShardClient {
   private final Integer shardId;
   private final LindenService.ServiceIface localClient;
 
-  private volatile List<LindenService.ServiceIface> clients;
+  private volatile List<Map.Entry<String, LindenService.ServiceIface>> clients;
 
   public ShardClient(final ZkClient zkClient, final String zk, final String path,
                      final LindenService.ServiceIface localClient, final int localPort, final int shardId) {
@@ -80,7 +80,7 @@ public class ShardClient {
 
           ServiceInstance instance = JSONObject.parseObject(new String(bytes), ServiceInstance.class);
           String hostPort = String.format("%s:%s", instance.getServiceEndpoint().getHost(),
-              instance.getServiceEndpoint().getPort());
+                                          instance.getServiceEndpoint().getPort());
           if (localHostPort.equals(hostPort)) {
             haslocalClient = true;
             lindenClients.put(node, new AbstractMap.SimpleEntry<>(hostPort, localClient));
@@ -118,9 +118,9 @@ public class ShardClient {
         }
 
         LOGGER.info("{} Linden node in shard {}.", lindenClients.size(), shardId);
-        List<LindenService.ServiceIface> tempClients = new ArrayList<>();
+        List<Map.Entry<String, LindenService.ServiceIface>> tempClients = new ArrayList<>();
         for (String node : lindenClients.keySet()) {
-          tempClients.add(lindenClients.get(node).getValue());
+          tempClients.add(lindenClients.get(node));
           String hostPort = lindenClients.get(node).getKey();
           LOGGER.info("Linden node {} {} on service in shard {}.", node, hostPort, shardId);
         }
@@ -135,28 +135,25 @@ public class ShardClient {
 
   /**
    * if there's the replica hash key, select replica by the key; or random one
+   *
    * @param request
    * @return
    */
-  private synchronized LindenService.ServiceIface getClient(LindenSearchRequest request) {
+  private synchronized Map.Entry<String, LindenService.ServiceIface> getClient(LindenSearchRequest request) {
     if (request.isSetRouteParam() && request.getRouteParam().isSetReplicaRouteKey()) {
       int index = Math.abs(request.getRouteParam().getReplicaRouteKey().hashCode() % clients.size());
       return clients.get(index);
     }
     if (haslocalClient) {
-      return localClient;
+      return new AbstractMap.SimpleEntry<>(localHostPort, localClient);
     }
     int index = random.nextInt(clients.size());
     return clients.get(index);
   }
 
-  public Future<LindenResult> search(LindenSearchRequest request) {
-    LindenService.ServiceIface client = getClient(request);
-    if (client != null) {
-      return client.search(request);
-    } else {
-      return Future.value(new LindenResult());
-    }
+  public Map.Entry<String, Future<LindenResult>> search(LindenSearchRequest request) {
+    Map.Entry<String, LindenService.ServiceIface> client = getClient(request);
+    return new AbstractMap.SimpleEntry<>(client.getKey(), client.getValue().search(request));
   }
 
   /**
@@ -165,21 +162,22 @@ public class ShardClient {
    * @param request
    * @return
    */
-  public List<Future<Response>> delete(LindenDeleteRequest request) {
-    List<Future<Response>> responses = new ArrayList<>();
-    for (LindenService.ServiceIface client : clients) {
-      Future<Response> response = client.delete(request);
-      responses.add(response);
+  public List<Map.Entry<String, Future<Response>>> delete(LindenDeleteRequest request) {
+    List<Map.Entry<String, Future<Response>>> hostFuturePairs = new ArrayList<>();
+    for (Map.Entry<String, LindenService.ServiceIface> hostClientPair : clients) {
+      Future<Response> future = hostClientPair.getValue().delete(request);
+      hostFuturePairs.add(new AbstractMap.SimpleEntry<>(hostClientPair.getKey(), future));
     }
-    return responses;
+    return hostFuturePairs;
   }
 
-  public Future<List<Response>> index(String content) {
-    List<Future<Response>> futures = new ArrayList<>();
-    for (LindenService.ServiceIface client : clients) {
-      futures.add(client.index(content));
+  public List<Map.Entry<String, Future<Response>>> index(String content) {
+    List<Map.Entry<String, Future<Response>>> hostFuturePairs = new ArrayList<>();
+    for (Map.Entry<String, LindenService.ServiceIface> hostClientPair : clients) {
+      Future<Response> future = hostClientPair.getValue().index(content);
+      hostFuturePairs.add(new AbstractMap.SimpleEntry<>(hostClientPair.getKey(), future));
     }
-    return Future.collect(futures);
+    return hostFuturePairs;
   }
 
   @Override
@@ -187,7 +185,8 @@ public class ShardClient {
     return String.format("zk:%s, path:%s, clients num:%d", zk, path, clients.size());
   }
 
-  public void close() {}
+  public void close() {
+  }
 
   public int getShardId() {
     return shardId;
