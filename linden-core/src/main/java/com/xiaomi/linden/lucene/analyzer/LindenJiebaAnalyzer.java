@@ -33,7 +33,7 @@ public class LindenJiebaAnalyzer extends Analyzer {
 
     private List<LindenSegmenter.Term> tokens = new ArrayList<>();
     private int currentPos;
-    private int offset;
+    private int inputLength;
     private CharTermAttribute termAtt;
     private OffsetAttribute offsetAtt;
 
@@ -42,7 +42,7 @@ public class LindenJiebaAnalyzer extends Analyzer {
       termAtt = addAttribute(CharTermAttribute.class);
       offsetAtt = addAttribute(OffsetAttribute.class);
       currentPos = 0;
-      offset = 0;
+      inputLength = 0;
     }
 
     @Override
@@ -51,9 +51,9 @@ public class LindenJiebaAnalyzer extends Analyzer {
       if (tokens.isEmpty()) {
         try {
           currentPos = 0;
-          offset = 0;
           BufferedReader br = new BufferedReader(input);
           String content = br.readLine();
+          inputLength = content.length();
           tokens = segmenter.parse(content);
         } catch (Exception e) {
           throw new IOException(Throwables.getStackTraceAsString(e));
@@ -65,21 +65,22 @@ public class LindenJiebaAnalyzer extends Analyzer {
           if (word != null) {
             ++currentPos;
             termAtt.copyBuffer(word.value.toCharArray(), 0, word.value.length());
-            if (word.startOffset != -1) {
-              offsetAtt.setOffset(word.startOffset, word.endOffset);
-            } else {
-              offsetAtt.setOffset(offset, offset + word.value.length());
-              offset += word.value.length();
-            }
+            offsetAtt.setOffset(word.startOffset, word.endOffset);
             return true;
           }
         } else {
           currentPos = 0;
-          offset = 0;
           tokens.clear();
         }
       }
       return false;
+    }
+
+    @Override
+    public final void end() throws IOException {
+      super.end();
+      // set final offset
+      offsetAtt.setOffset(inputLength, inputLength);
     }
   }
 

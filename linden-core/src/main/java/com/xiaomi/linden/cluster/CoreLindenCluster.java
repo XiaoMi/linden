@@ -178,7 +178,8 @@ public class CoreLindenCluster extends LindenCluster {
                   LOGGER.error("Shard [{}] host [{}] failed to get delete response : {}",
                                entry.getKey(), hostFuturePair.getKey(), response.getError());
                   errorInfo
-                      .append("Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + response.getError() + ";");
+                      .append("Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + response.getError()
+                              + ";");
 
                 }
               }
@@ -190,7 +191,8 @@ public class CoreLindenCluster extends LindenCluster {
               LOGGER.error("Shard [{}] host [{}] failed to get delete response : {}",
                            entry.getKey(), hostFuturePair.getKey(), Throwables.getStackTraceAsString(t));
               errorInfo
-                  .append("Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + Throwables.getStackTraceAsString(t) + ";");
+                  .append("Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + Throwables
+                      .getStackTraceAsString(t) + ";");
               return BoxedUnit.UNIT;
             }
           }));
@@ -210,7 +212,7 @@ public class CoreLindenCluster extends LindenCluster {
       }
       return ResponseUtils.SUCCESS;
     } catch (Exception e) {
-      LOGGER.error("Failed to get results from all nodes, exception: {}", Throwables.getStackTraceAsString(e));
+      LOGGER.error("Failed to get all delete responses, exception: {}", Throwables.getStackTraceAsString(e));
       LOGGER.error(getHostFutureInfo(hosts, futures));
       return ResponseUtils.buildFailedResponse(e);
     }
@@ -293,10 +295,12 @@ public class CoreLindenCluster extends LindenCluster {
         Await.result(collected, Duration.apply(clusterFutureAwaitTimeout, TimeUnit.MILLISECONDS));
       }
     } catch (Exception e) {
-      LOGGER.error("Failed to get results from all nodes, exception: {}", Throwables.getStackTraceAsString(e));
+      LOGGER.error("Failed to get all results, exception: {}", Throwables.getStackTraceAsString(e));
       LOGGER.error(getHostFutureInfo(hosts, futures));
-      return new LindenResult().setSuccess(false)
-          .setError("Failed to get results from all nodes, " + Throwables.getStackTraceAsString(e));
+      if (resultList.size() == 0) {
+        return new LindenResult().setSuccess(false)
+            .setError("Failed to get any shard result, " + Throwables.getStackTraceAsString(e));
+      }
     }
     return ResultMerger.merge(request, resultList);
   }
@@ -324,7 +328,8 @@ public class CoreLindenCluster extends LindenCluster {
                                entry.getKey(), hostFuturePair.getKey(), response.getError());
                   synchronized (errorInfo) {
                     errorInfo.append(
-                        "Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + response.getError() + ";");
+                        "Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + response.getError()
+                        + ";");
                   }
                 }
                 return BoxedUnit.UNIT;

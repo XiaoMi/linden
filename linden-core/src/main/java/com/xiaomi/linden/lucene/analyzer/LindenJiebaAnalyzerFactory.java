@@ -19,7 +19,7 @@ public class LindenJiebaAnalyzerFactory implements LindenPluginFactory<LindenJie
   public LindenJiebaAnalyzer getInstance(Map<String, String> params) throws IOException {
     String mode = params.get(MODE);
     String userDict = params.get(USER_DICT);
-    JiebaSegmenter.SegMode segMode = JiebaSegmenter.SegMode.SEARCH;
+    JiebaSegmenter.SegMode segMode;
 
     if (mode != null && mode.equalsIgnoreCase("index")) {
       segMode = JiebaSegmenter.SegMode.INDEX;

@@ -27,9 +27,9 @@ import com.xiaomi.linden.thrift.common.LindenResult;
 import com.xiaomi.linden.thrift.common.LindenSchema;
 import com.xiaomi.linden.thrift.common.LindenSearchRequest;
 
-public class TestLindenMMSeg4jAnalyzer extends TestLindenCoreBase {
+public class TestLindenJiebaAnalyzerSearchMode extends TestLindenCoreBase {
 
-  public TestLindenMMSeg4jAnalyzer() throws Exception {
+  public TestLindenJiebaAnalyzerSearchMode() throws Exception {
     try {
       handleRequest("{\"id\":1, \"title\": \"海军上将刘华清\"}");
       handleRequest("{\"id\":2, \"title\": \"刘华\"}");
@@ -50,17 +50,19 @@ public class TestLindenMMSeg4jAnalyzer extends TestLindenCoreBase {
     schema.addToFields(new LindenFieldSchema().setName("title").setIndexed(true).setTokenized(true).setSnippet(true));
     lindenConfig.setSchema(schema);
     lindenConfig
-        .putToProperties("search.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
+        .putToProperties("search.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenJiebaAnalyzerFactory");
     lindenConfig
-        .putToProperties("index.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenMMSeg4jAnalyzerFactory");
+        .putToProperties("index.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenJiebaAnalyzerFactory");
+    lindenConfig
+        .putToProperties("index.analyzer.mode", "search");
   }
 
   @Test
-  public void testQueryString() throws IOException {
+  public void testSearchMode() throws IOException {
     String bql = "select * from linden by query is \"title:刘华清\"";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
-    Assert.assertEquals(3, result.getTotalHits());
+    Assert.assertEquals(2, result.getTotalHits());
 
     // phrase test
     bql = "select * from linden by query is 'title:\"刘华清\"'";
@@ -72,19 +74,22 @@ public class TestLindenMMSeg4jAnalyzer extends TestLindenCoreBase {
     result = lindenCore.search(request);
     Assert.assertEquals(2, result.getTotalHits());
 
-   // snippet test
-    bql = "select * from linden by query is 'title:(上将刘华清中国龙)' snippet title";
+    // snippet test
+    bql = "select * from linden by query is 'title:(海军上将刘华清中国龙)' snippet title";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
-    Assert.assertEquals(3, result.getTotalHits());
-    Assert.assertEquals("海军<b>上将</b><b>刘</b><b>华</b><b>清</b>!!! <b>中国</b> 人民 李玉洁 尚铁<b>龙</b> 胡晓光",
+    Assert.assertEquals(2, result.getTotalHits());
+    Assert.assertEquals("<b>海军上将</b><b>刘华清</b>",
                         result.getHits().get(0).getSnippets().get("title").getSnippet());
+    Assert.assertEquals("<b>海军上将</b><b>刘华清</b>!!! <b>中国</b> 人民 李玉洁 尚铁龙 胡晓光",
+                        result.getHits().get(1).getSnippets().get("title").getSnippet());
 
     bql = "select * from linden by query is 'title:(海军中国铁龙)' snippet title";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
-    Assert.assertEquals(2, result.getTotalHits());
-    Assert.assertEquals("<b>海军</b>上将刘华清!!! <b>中国</b> 人民 李玉洁 尚<b>铁</b><b>龙</b> 胡晓光",
+    Assert.assertEquals(1, result.getTotalHits());
+    Assert.assertEquals("<b>中国</b> 人民 李玉洁 尚铁龙 胡晓光",
                         result.getHits().get(0).getSnippets().get("title").getSnippet());
   }
+
 }

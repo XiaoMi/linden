@@ -75,18 +75,18 @@ public class TestLindenSnippet extends TestLindenCoreBase {
 
   @Test
   public void basicTest() throws IOException {
-    String bql = "SELECT * FROM linden QUERY query is 'title:test' snippet title";
+    String bql = "SELECT * FROM linden by query is 'title:test' snippet title";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals("This is a <b>test</b>. Just a <b>test</b> highlighting from postings. ",
                         result.getHits().get(0).getSnippets().get("title").getSnippet());
-    bql = "SELECT * FROM linden QUERY query is 'title:highlighting' snippet title";
+    bql = "SELECT * FROM linden by query is 'title:highlighting' snippet title";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
     Assert.assertEquals("<b>Highlighting</b> the first term. ",
                         result.getHits().get(0).getSnippets().get("title").getSnippet());
 
-    bql = "SELECT * FROM linden QUERY query is 'title:游戏' snippet title";
+    bql = "SELECT * FROM linden by query is 'title:游戏' snippet title";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
     Assert
@@ -95,7 +95,7 @@ public class TestLindenSnippet extends TestLindenCoreBase {
 
   @Test
   public void multiTest() throws IOException {
-    String bql = "SELECT * FROM linden QUERY query is 'title:test AND body:best' snippet title, body";
+    String bql = "SELECT * FROM linden by query is 'title:test AND body:best' snippet title, body";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals("This is a <b>test</b>. Just a <b>test</b> highlighting from postings. ",
@@ -127,7 +127,7 @@ public class TestLindenSnippet extends TestLindenCoreBase {
 
   @Test
   public void passageLimitTest() throws IOException {
-    String bql = "SELECT * FROM linden QUERY query is 'title:小米6' or query is 'body:小米6' snippet title, body";
+    String bql = "SELECT * FROM linden by query is 'title:小米6' or query is 'body:小米6' snippet title, body";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(
