@@ -11,8 +11,10 @@ shard.id | 0 | Index shard id | N
 index.directory | null | Path of index directory | Y
 index.refresh.time | 60 | Seconds between documents is injected to linden and visible to user. | N
 plugin.path | null | Score model plugin directory path, see score model plugin part at [BQL document](BQL.md#score-model) | N
-search.timeout | 1000 | Collection timeout of linden cluster instances result in milliseconds | N
-enable.parallel.search | false | If enable parallel search | N
+cluster.future.await.timeout | 1000 | Collection timeout of linden instances results in milliseconds | N
+cluster.future.pool.wait.timeout | 200 | Waiting timeout of linden cluster request future in ExecutorServiceFuturePool | N
+instance.future.pool.wait.timeout | 200 | Waiting timeout of linden instance request future in ExecutorServiceFuturePool | N
+enable.parallel.search | true | If enable parallel search | N
 log.path | null | Linden log directory path | Y
 enable.cache | false | If enable search cache | N
 cache.duration | 10 | Cache expiration limit in second | N
