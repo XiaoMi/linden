@@ -20,8 +20,7 @@ struct LindenFieldSchema {
     8: optional bool docValues = 0;
     9: optional bool multi = 0;
     10: optional bool omitFreqs = 0,
-    11: optional bool listCache = 0,
-    12: optional bool dynamicSchema = 0,
+    11: optional bool dynamicSchema = 0,
 }
 
 struct LindenSchema {

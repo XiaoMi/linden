@@ -200,7 +200,7 @@ public class LindenScoreModelStrategyBuilder {
             hasId = true;
           }
           String retType;
-          if (field.isListCache()) {
+          if (field.isMulti()) {
             switch (field.getType()) {
               case INTEGER:
                 retType = "int[]";
@@ -243,7 +243,7 @@ public class LindenScoreModelStrategyBuilder {
                 continue;
             }
           }
-          classPrinter.printf("private FieldValues<%s> %s;", retType, field.getName());
+          classPrinter.printf("private FieldValues<%s> %s;\n", retType, field.getName());
           classPrinter.printf("public %s %s() throws IOException {\n" +
                               "    if (%s == null) {\n" +
                               "      %s = getFieldValues(\"%s\");\n" +
@@ -255,7 +255,7 @@ public class LindenScoreModelStrategyBuilder {
 
         // add id field, since id field may not be in schema.getFields()
         if (!hasId) {
-          classPrinter.printf("private FieldValues<String> %s;", schema.getId());
+          classPrinter.printf("private FieldValues<String> %s;\n", schema.getId());
           classPrinter.printf("public String %s() throws IOException {\n" +
                               "    if (%s == null) {\n" +
                               "      %s = getFieldValues(\"%s\");\n" +

@@ -31,8 +31,8 @@ public class TestLindenJiebaAnalyzerIndexMode extends TestLindenCoreBase {
 
   public TestLindenJiebaAnalyzerIndexMode() throws Exception {
     try {
-      handleRequest("{\"id\":1, \"title\": \"海军上将刘华清\"}");
-      handleRequest("{\"id\":2, \"title\": \"刘华\"}");
+      handleRequest("{\"id\":1, \"title\": [\"海军上将刘华清\"]}");
+      handleRequest("{\"id\":2, \"title\": [\"刘华\"]}");
       handleRequest("{\"id\":3, \"title\": [\"海军上将刘华清!!!\", \"中国\", \"人民\", \"李玉洁\", \"尚铁龙\", \"胡晓光\"]}");
       lindenCore.commit();
       lindenCore.refresh();
@@ -47,7 +47,8 @@ public class TestLindenJiebaAnalyzerIndexMode extends TestLindenCoreBase {
     lindenConfig.setIndexType(LindenConfig.IndexType.RAM);
     lindenConfig.setClusterUrl("127.0.0.1:2181/mock");
     LindenSchema schema = new LindenSchema().setId("id");
-    schema.addToFields(new LindenFieldSchema().setName("title").setIndexed(true).setTokenized(true).setSnippet(true));
+    schema.addToFields(
+        new LindenFieldSchema().setName("title").setIndexed(true).setTokenized(true).setSnippet(true).setMulti(true));
     lindenConfig.setSchema(schema);
     lindenConfig
         .putToProperties("search.analyzer.class", "com.xiaomi.linden.lucene.analyzer.LindenJiebaAnalyzerFactory");

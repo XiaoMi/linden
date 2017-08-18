@@ -37,7 +37,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
       handleRequest(
           "{\"id\":1, \"title\": \"lucene 1\", \"field1\": \"aaa\", \"rank\": 1.2, \"cat1\":1, \"cat2\":1.5}");
       handleRequest(
-          "{\"id\":2, \"title\": \"lucene 2\", \"field1\": \"bbb\", \"rank\": 4.5, \"cat1\":2, \"cat2\":2.5, \"tagnum\": 100}");
+          "{\"id\":2, \"title\": \"lucene 2\", \"field1\": \"bbb\", \"rank\": 4.5, \"cat1\":2, \"cat2\":2.5, \"tagnum\": [100]}");
       handleRequest(
           "{\"id\":3, \"title\": \"lucene 3\", \"field1\": \"ccc\", \"rank\": 4.5, \"cat1\":3, \"cat2\":3.5, \"tagstr\":\"ok\"}");
       handleRequest(
@@ -101,7 +101,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
   @Test
   public void updateIndex() throws Exception {
     // update document 3
-    handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"tagnum\":10}}");
+    handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"tagnum\":[10]}}");
 
     lindenCore.refresh();
 

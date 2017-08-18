@@ -17,8 +17,13 @@ package com.xiaomi.linden.core.search;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Preconditions;
@@ -73,6 +78,7 @@ import com.xiaomi.linden.thrift.common.LindenDocument;
 import com.xiaomi.linden.thrift.common.LindenFacet;
 import com.xiaomi.linden.thrift.common.LindenFacetDimAndPath;
 import com.xiaomi.linden.thrift.common.LindenField;
+import com.xiaomi.linden.thrift.common.LindenFieldSchema;
 import com.xiaomi.linden.thrift.common.LindenIndexRequest;
 import com.xiaomi.linden.thrift.common.LindenResult;
 import com.xiaomi.linden.thrift.common.LindenSearchRequest;
@@ -374,21 +380,22 @@ public class LindenCoreImpl extends LindenCore {
     for (LindenField field : lindenDoc.getFields()) {
       oldDoc.remove(field.getSchema().getName());
     }
+
     // merge new fields
     for (LindenField field : lindenDoc.getFields()) {
-      String fieldName = field.getSchema().getName();
-      Object obj = oldDoc.get(fieldName);
-      Object val = LindenUtil.parseLindenValue(field.getValue(), field.schema.getType());
-      if (obj == null) {
-        oldDoc.put(fieldName, val);
-      } else if (obj instanceof JSONArray) {
-        ((JSONArray) obj).add(val);
-      } else {
-        JSONArray array = new JSONArray();
-        array.add(obj);
-        array.add(val);
-        oldDoc.put(fieldName, array);
+      // multi-value field is indexed as 2 parts.
+      // one is each value in the specified schema,
+      // the other is raw JSONArray in string format for source data and score model
+      // so we need convert these 2 parts back to raw JSONArray format in the specified schema
+      if (field.getSchema().isMulti()) {
+        if (field.getSchema().isDocValues()) {
+          oldDoc.put(field.getSchema().getName(), JSON.parseArray(field.getValue()));
+        }
+        continue;
       }
+      String fieldName = field.getSchema().getName();
+      Object val = LindenUtil.parseLindenValue(field.getValue(), field.schema.getType());
+      oldDoc.put(fieldName, val);
     }
 
     LindenDocument newDoc = LindenDocumentBuilder.build(config.getSchema(), oldDoc);

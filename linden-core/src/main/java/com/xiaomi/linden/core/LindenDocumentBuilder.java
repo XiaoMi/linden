@@ -39,16 +39,26 @@ public class LindenDocumentBuilder {
     }
     for (LindenFieldSchema fieldSchema : schema.getFields()) {
       Object value = json.get(fieldSchema.getName());
-      if (value != null) {
-        if (value instanceof JSONArray) {
-          for (Object element : (JSONArray) value) {
-            LindenField field = new LindenField().setSchema(fieldSchema).setValue(element.toString());
-            document.addToFields(field);
-          }
-        } else {
-          LindenField field = new LindenField().setSchema(fieldSchema).setValue(value.toString());
+      if (value == null) {
+        continue;
+      }
+      if (fieldSchema.isMulti()) {
+        if (!(value instanceof JSONArray)) {
+          throw new IOException("Multi value field " + fieldSchema.getName() + " must be in JSONArray format");
+        }
+        for (Object element : (JSONArray) value) {
+          LindenField field = new LindenField().setSchema(fieldSchema).setValue(element.toString());
           document.addToFields(field);
         }
+        LindenFieldSchema multiValueFieldSchema = new LindenFieldSchema(fieldSchema.getName(), LindenType.STRING);
+        // both multi and docValues are true is forbidden in user defined schema.
+        // this can only happen in multi-value source field, which is used for source data and score model
+        multiValueFieldSchema.setMulti(true).setDocValues(true);
+        LindenField multiValueField = new LindenField().setSchema(multiValueFieldSchema).setValue(value.toString());
+        document.addToFields(multiValueField);
+      } else {
+        LindenField field = new LindenField().setSchema(fieldSchema).setValue(value.toString());
+        document.addToFields(field);
       }
     }
     JSONArray dynamicFields = json.getJSONArray(LindenSchemaConf.DYNAMICS);
@@ -74,23 +84,39 @@ public class LindenDocumentBuilder {
       String key = entry.getKey();
       String value = String.valueOf(entry.getValue());
       switch (key.toLowerCase()) {
-        case "_tokenize" : fieldSchema.setTokenized(value.equalsIgnoreCase("true")); break;
-        case "_omitnorms" : fieldSchema.setOmitNorms(value.equalsIgnoreCase("true")); break;
-        case "_snippet" : fieldSchema.setSnippet(value.equalsIgnoreCase("true")); break;
-        case "_docvalues" : fieldSchema.setDocValues(value.equalsIgnoreCase("true")); break;
-        case "_multi" : fieldSchema.setMulti(value.equalsIgnoreCase("true")); break;
-        case "_omitfreqs" : fieldSchema.setOmitFreqs(value.equalsIgnoreCase("true")); break;
-        case "_listcache" : fieldSchema.setListCache(value.equalsIgnoreCase("true")); break;
-        case "_type" :
+        case "_tokenize":
+          fieldSchema.setTokenized(value.equalsIgnoreCase("true"));
+          break;
+        case "_omitnorms":
+          fieldSchema.setOmitNorms(value.equalsIgnoreCase("true"));
+          break;
+        case "_snippet":
+          fieldSchema.setSnippet(value.equalsIgnoreCase("true"));
+          break;
+        case "_docvalues":
+          fieldSchema.setDocValues(value.equalsIgnoreCase("true"));
+          break;
+        case "_multi":
+          fieldSchema.setMulti(value.equalsIgnoreCase("true"));
+          break;
+        case "_omitfreqs":
+          fieldSchema.setOmitFreqs(value.equalsIgnoreCase("true"));
+          break;
+        case "_type":
           switch (value.toLowerCase()) {
-            case "int"    : fieldSchema.setType(LindenType.INTEGER); break;
-            default : fieldSchema.setType(LindenType.valueOf(value.toUpperCase())); break;
+            case "int":
+              fieldSchema.setType(LindenType.INTEGER);
+              break;
+            default:
+              fieldSchema.setType(LindenType.valueOf(value.toUpperCase()));
+              break;
           }
           break;
         default:
           if (fieldSchema.isSetName()) {
             throw new IOException(
-                "Dynamic field name has already been set to " + fieldSchema.getName() + ", it can not be set to " + key);
+                "Dynamic field name has already been set to " + fieldSchema.getName() + ", it can not be set to "
+                + key);
           }
           fieldSchema.setName(key);
           field.setValue(value);

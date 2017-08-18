@@ -43,7 +43,6 @@ public class LindenSchemaBuilder {
   public static final String DOCVALUES = "docvalues";
   public static final String MULTI = "multi";
   public static final String TEXT = "text";
-  public static final String LISTCACHE = "listCache";
   public static final String YES = "yes";
   public static final String NO = "no";
   public static final String INT = "int";
@@ -73,9 +72,6 @@ public class LindenSchemaBuilder {
   public static void verifyFieldSchema(LindenFieldSchema schema) {
     if (schema.isDocValues() && schema.isMulti()) {
       throw new RuntimeException("DocValues and Multi can not be both set for field " + schema.getName());
-    }
-    if (schema.isMulti() && schema.isListCache()) {
-      throw new RuntimeException("Multi and listCache can not be both set for field " + schema.getName());
     }
   }
 
@@ -125,10 +121,6 @@ public class LindenSchemaBuilder {
     if (element.hasAttribute(MULTI)) {
       String multi = element.getAttribute(MULTI);
       field.setMulti(multi.toLowerCase().equals(YES));
-    }
-    if (element.hasAttribute(LISTCACHE)) {
-      String listCache = element.getAttribute(LISTCACHE);
-      field.setListCache(listCache.equalsIgnoreCase(YES));
     }
 
     //but if the field has the index attribute,

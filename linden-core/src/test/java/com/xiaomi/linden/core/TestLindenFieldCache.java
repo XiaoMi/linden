@@ -16,6 +16,7 @@ package com.xiaomi.linden.core;
 
 import java.io.IOException;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,15 +36,21 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
         JSONObject json = new JSONObject();
         json.put("id", "doc_" + i);
         json.put("title", "lucene " + i);
-        StringBuilder sb = new StringBuilder();
+        JSONArray jsonArray = new JSONArray();
         for (int j = 0; j < 3; ++j) {
-          sb.append(i + j).append('|');
+          jsonArray.add(i + j);
         }
-        json.put("ids", sb.toString());
-        json.put("ids_str", sb.toString());
-        json.put("ids_float", sb.toString());
-        json.put("ids_double", sb.toString());
+        json.put("ids_int", jsonArray);
+        json.put("ids_long", jsonArray);
+        json.put("ids_float", jsonArray);
+        json.put("ids_double", jsonArray);
+        jsonArray = new JSONArray();
+        for (int j = 0; j < 3; ++j) {
+          jsonArray.add(String.valueOf(i + j));
+        }
+        json.put("ids_str", jsonArray);
         json.put("rank", i * 10);
+
         handleRequest(json.toJSONString());
       }
       lindenCore.commit();
@@ -58,14 +65,16 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
   public void init() throws Exception {
     LindenSchema schema = new LindenSchema().setId("id");
     schema.addToFields(new LindenFieldSchema().setName("title").setIndexed(true).setTokenized(true));
-    schema.addToFields(new LindenFieldSchema().setName("ids").setType(LindenType.INTEGER).setIndexed(true)
-        .setTokenized(true).setDocValues(true).setListCache(true));
+    schema.addToFields(new LindenFieldSchema().setName("ids_int").setType(LindenType.INTEGER).setIndexed(true)
+                           .setTokenized(true).setMulti(true));
+    schema.addToFields(new LindenFieldSchema().setName("ids_long").setType(LindenType.INTEGER).setIndexed(true)
+                           .setTokenized(true).setMulti(true));
     schema.addToFields(new LindenFieldSchema().setName("ids_str").setType(LindenType.STRING).setIndexed(true)
-        .setTokenized(true).setDocValues(true).setListCache(true));
+                           .setTokenized(true).setMulti(true));
     schema.addToFields(new LindenFieldSchema().setName("ids_float").setType(LindenType.FLOAT).setIndexed(true)
-        .setTokenized(false).setDocValues(true).setListCache(true));
+                           .setTokenized(false).setMulti(true));
     schema.addToFields(new LindenFieldSchema().setName("ids_double").setType(LindenType.DOUBLE).setIndexed(true)
-        .setTokenized(false).setDocValues(true).setListCache(true));
+                           .setTokenized(false).setMulti(true));
     schema.addToFields(new LindenFieldSchema().setName("rank").setType(LindenType.FLOAT).setIndexed(true));
     lindenConfig.setSchema(schema);
   }
@@ -73,28 +82,28 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
   @Test
   public void intListTest() throws IOException {
     String bql = "select * from linden by query is \"title:lucene\" " +
-        "using score model test " +
-        "begin " +
-        "    float sum = 0;\n" +
-        "    for (int a : ids()) {\n" +
-        "      sum += a;\n" +
-        "    }\n" +
-        "return sum;\n" +
-        "end";
+                 "using score model test " +
+                 "begin " +
+                 "    float sum = 0;\n" +
+                 "    for (int a : ids_int()) {\n" +
+                 "      sum += a;\n" +
+                 "    }\n" +
+                 "    return sum;\n" +
+                 "end";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(10, result.getTotalHits());
     Assert.assertEquals(30, result.getHits().get(0).getScore(), 0.1f);
 
-    bql = "select * from linden by query is \"ids:2\" " +
-        "using score model test " +
-        "begin " +
-        "    float sum = 0;\n" +
-        "    for (int a : ids()) {\n" +
-        "      sum += a;\n" +
-        "    }\n" +
-        "return sum;\n" +
-        "end";
+    bql = "select * from linden where ids_int = 2  " +
+          "using score model test " +
+          "begin " +
+          "    float sum = 0;\n" +
+          "    for (int a : ids_int()) {\n" +
+          "      sum += a;\n" +
+          "    }\n" +
+          "    return sum;\n" +
+          "end";
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
     Assert.assertEquals(3, result.getTotalHits());
@@ -104,16 +113,16 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
   @Test
   public void stringListTest() throws IOException {
     String bql = "select * from linden by query is \"title:lucene\" " +
-        "using score model test " +
-        "begin " +
-        "  int base = doc();\n" +
-        "  for (String str : ids_str()) {\n" +
-        "    if (base++ != Integer.valueOf(str)) {\n" +
-        "      return -1.0;\n" +
-        "    }\n" +
-        "  }\n" +
-        "return 1.0;\n" +
-        "end";
+                 "using score model test " +
+                 "begin " +
+                 "  int base = doc();\n" +
+                 "  for (String str : ids_str()) {\n" +
+                 "    if (base++ != Integer.valueOf(str)) {\n" +
+                 "      return -1.0;\n" +
+                 "    }\n" +
+                 "  }\n" +
+                 "  return 1.0;\n" +
+                 "end";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(10, result.getTotalHits());
@@ -125,16 +134,16 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
   @Test
   public void floatListTest() throws IOException {
     String bql = "select * from linden by query is \"title:lucene\" " +
-        "using score model test " +
-        "begin " +
-        "  int base = doc();\n" +
-        "  for (float f : ids_float()) {\n" +
-        "    if (f != (float)(base++)) {\n" +
-        "      return -1.0;\n" +
-        "    }\n" +
-        "  }\n" +
-        "return 1.0;\n" +
-        "end";
+                 "using score model test " +
+                 "begin " +
+                 "  int base = doc();\n" +
+                 "  for (float f : ids_float()) {\n" +
+                 "    if (f != (float)(base++)) {\n" +
+                 "      return -1.0;\n" +
+                 "    }\n" +
+                 "  }\n" +
+                 "  return 1.0;\n" +
+                 "end";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(10, result.getTotalHits());
@@ -146,16 +155,16 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
   @Test
   public void doubleListTest() throws IOException {
     String bql = "select * from linden by query is \"title:lucene\" " +
-        "using score model test " +
-        "begin " +
-        "  int base = doc();\n" +
-        "  for (double d : ids_double()) {\n" +
-        "    if (d != (double)(base++)) {\n" +
-        "      return -1.0;\n" +
-        "    }\n" +
-        "  }\n" +
-        "return 1.0;\n" +
-        "end";
+                 "using score model test " +
+                 "begin " +
+                 "  int base = doc();\n" +
+                 "  for (double d : ids_double()) {\n" +
+                 "    if (d != (double)(base++)) {\n" +
+                 "      return -1.0;\n" +
+                 "    }\n" +
+                 "  }\n" +
+                 "  return 1.0;\n" +
+                 "end";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(10, result.getTotalHits());
@@ -167,14 +176,14 @@ public class TestLindenFieldCache extends TestLindenCoreBase {
   @Test
   public void idTest() throws IOException {
     String bql = "select * from linden by query is \"title:lucene\" " +
-        "using score model test " +
-        "begin " +
-        "  String expectedId = \"doc_\" + doc();\n" +
-        "  if (!id().equals(expectedId)) {\n" +
-        "      return -1.0;\n" +
-        "  }\n" +
-        "return 1.0;\n" +
-        "end";
+                 "using score model test " +
+                 "begin " +
+                 "  String expectedId = \"doc_\" + doc();\n" +
+                 "  if (!id().equals(expectedId)) {\n" +
+                 "      return -1.0;\n" +
+                 "  }\n" +
+                 "return 1.0;\n" +
+                 "end";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(10, result.getTotalHits());

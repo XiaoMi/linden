@@ -17,7 +17,6 @@ package com.xiaomi.linden.core;
 import java.io.IOException;
 
 import com.alibaba.fastjson.JSON;
-import com.google.common.base.Throwables;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.DisjunctionMaxQuery;
 import org.apache.lucene.search.Filter;
@@ -46,11 +45,30 @@ import com.xiaomi.linden.thrift.common.LindenType;
 public class TestLindenCore extends TestLindenCoreBase {
 
   public float DELTA5 = 0.00001f;
-  public static final String data1 = JSON.parse("{\"id\":\"1\",\"title\":\"lucene 1\",\"field1\":\"aaa\",\"field2\":\"aaa aaa\",\"rank\": 1.2,\"cat1\":1,\"cat2\":1.5,\"hotwords\":\"hello\"}").toString();
-  public static final String data2 = JSON.parse("{\"id\":\"2\",\"title\":\"lucene 2\",\"field1\":\"bbb\",\"rank\":4.5,\"cat1\":2,\"cat2\":2.5,\"tagnum\":100}").toString();
-  public static final String data3 = JSON.parse("{\"id\":\"3\",\"title\":\"lucene 3\",\"field1\":\"ccc\",\"rank\":4.5,\"cat1\":3,\"cat2\":3.5,\"tagstr\":\"ok\"}").toString();
-  public static final String data4 = JSON.parse("{\"type\":\"index\",\"content\":{\"id\":\"4\",\"title\":\"lucene 4\",\"field1\":\"ddd\",\"rank\":10.3,\"cat1\":4,\"cat2\":4.5}}").toString();
-  public static final String data5 = JSON.parse("{\"id\":\"5\",\"title\":\"lucene 5\",\"field1\":\"ddd\",\"rank\":10.3,\"cat1\":5,\"cat2\":5.5}").toString();
+  public static final String
+      data1 =
+      JSON.parse(
+          "{\"id\":\"1\",\"title\":\"lucene 1\",\"field1\":\"aaa\",\"field2\":\"aaa aaa\",\"rank\": 1.2,\"cat1\":1,\"cat2\":1.5,\"hotwords\":\"hello\"}")
+          .toString();
+  public static final String
+      data2 =
+      JSON.parse(
+          "{\"id\":\"2\",\"title\":\"lucene 2\",\"field1\":\"bbb\",\"rank\":4.5,\"cat1\":2,\"cat2\":2.5,\"tagnum\":100}")
+          .toString();
+  public static final String
+      data3 =
+      JSON.parse(
+          "{\"id\":\"3\",\"title\":\"lucene 3\",\"field1\":\"ccc\",\"rank\":4.5,\"cat1\":3,\"cat2\":3.5,\"tagstr\":[\"ok\"]}")
+          .toString();
+  public static final String
+      data4 =
+      JSON.parse(
+          "{\"type\":\"index\",\"content\":{\"id\":\"4\",\"title\":\"lucene 4\",\"field1\":\"ddd\",\"rank\":10.3,\"cat1\":4,\"cat2\":4.5}}")
+          .toString();
+  public static final String
+      data5 =
+      JSON.parse("{\"id\":\"5\",\"title\":\"lucene 5\",\"field1\":\"ddd\",\"rank\":10.3,\"cat1\":5,\"cat2\":5.5}")
+          .toString();
   public static final String data6 = JSON.parse("{\"id\":\"6\",\"tagstr\":[\"MI4\",\"MI Note\",\"Note3\"]}").toString();
   public static final String data7 = JSON.parse("{\"id\":\"7\",\"tagstr\":[\"MI4C\",\"MI Note Pro\"]}").toString();
 
@@ -87,7 +105,8 @@ public class TestLindenCore extends TestLindenCoreBase {
         new LindenFieldSchema().setName("cat1").setType(LindenType.INTEGER).setIndexed(true).setStored(true));
     schema.addToFields(
         new LindenFieldSchema().setName("cat2").setType(LindenType.DOUBLE).setIndexed(true).setStored(true));
-    schema.addToFields(new LindenFieldSchema().setName("tagstr").setIndexed(true).setMulti(true).setStored(true).setMulti(true));
+    schema.addToFields(
+        new LindenFieldSchema().setName("tagstr").setIndexed(true).setMulti(true).setStored(true).setMulti(true));
     schema.addToFields(new LindenFieldSchema().setName("hotwords").setStored(true));
     schema.addToFields(new LindenFieldSchema().setName("tagnum").setType(LindenType.INTEGER).setIndexed(true));
     lindenConfig.setSchema(schema);
@@ -126,7 +145,7 @@ public class TestLindenCore extends TestLindenCoreBase {
   public void flexibleQueryEmptyFieldTest() throws IOException {
     String function = "   if (tagnum() != 0) {\n" +
                       "      return 10f;\n" +
-                      "    } else if (!tagstr().isEmpty()) {\n" +
+                      "    } else if (tagstr().length > 0) {\n" +
                       "      return 100f;\n" +
                       "    } else {\n" +
                       "      return 1f;\n" +
@@ -554,7 +573,7 @@ public class TestLindenCore extends TestLindenCoreBase {
     request = bqlCompiler.compile(bql).getSearchRequest();
     query = QueryConstructor.constructQuery(request.getQuery(), lindenConfig);
     Assert.assertTrue(query instanceof BooleanQuery);
-    BooleanQuery booleanQuery = (BooleanQuery)query;
+    BooleanQuery booleanQuery = (BooleanQuery) query;
     Assert.assertEquals(4f, booleanQuery.clauses().get(0).getQuery().getBoost(), DELTA5);
     Assert.assertEquals(1f, booleanQuery.clauses().get(1).getQuery().getBoost(), DELTA5);
     request = bqlCompiler.compile(bql).getSearchRequest();
@@ -566,7 +585,7 @@ public class TestLindenCore extends TestLindenCoreBase {
     request = bqlCompiler.compile(bql).getSearchRequest();
     query = QueryConstructor.constructQuery(request.getQuery(), lindenConfig);
     Assert.assertTrue(query instanceof BooleanQuery);
-    booleanQuery = (BooleanQuery)query;
+    booleanQuery = (BooleanQuery) query;
     Assert.assertEquals(4f, booleanQuery.clauses().get(0).getQuery().getBoost(), DELTA5);
     Assert.assertEquals(2f, booleanQuery.clauses().get(1).getQuery().getBoost(), DELTA5);
     request = bqlCompiler.compile(bql).getSearchRequest();
@@ -578,7 +597,7 @@ public class TestLindenCore extends TestLindenCoreBase {
     request = bqlCompiler.compile(bql).getSearchRequest();
     query = QueryConstructor.constructQuery(request.getQuery(), lindenConfig);
     Assert.assertTrue(query instanceof BooleanQuery);
-    booleanQuery = (BooleanQuery)query;
+    booleanQuery = (BooleanQuery) query;
     Assert.assertEquals(4f, booleanQuery.clauses().get(0).getQuery().getBoost(), DELTA5);
     Assert.assertEquals(1f, booleanQuery.clauses().get(1).getQuery().getBoost(), DELTA5);
     request = bqlCompiler.compile(bql).getSearchRequest();
@@ -590,7 +609,7 @@ public class TestLindenCore extends TestLindenCoreBase {
     request = bqlCompiler.compile(bql).getSearchRequest();
     query = QueryConstructor.constructQuery(request.getQuery(), lindenConfig);
     Assert.assertTrue(query instanceof BooleanQuery);
-    booleanQuery = (BooleanQuery)query;
+    booleanQuery = (BooleanQuery) query;
     Assert.assertEquals(4f, booleanQuery.clauses().get(0).getQuery().getBoost(), DELTA5);
     Assert.assertEquals(2f, booleanQuery.clauses().get(1).getQuery().getBoost(), DELTA5);
     request = bqlCompiler.compile(bql).getSearchRequest();
@@ -747,5 +766,23 @@ public class TestLindenCore extends TestLindenCoreBase {
     result = lindenCore.search(lindenRequest);
     Assert.assertEquals(1, result.getTotalHits());
     Assert.assertEquals("7", result.getHits().get(0).getId());
+
+    bql = "select * from linden source " +
+          "using score model test " +
+          "begin " +
+          "  float sum = 0;\n" +
+          "  for (String tag : tagstr()) {\n" +
+          "    if (tag.equals(\"MI Note Pro\")) {\n" +
+          "      sum += 10.0; \n" +
+          "      }\n" +
+          "  }\n" +
+          "  return sum;\n" +
+          "end";
+    lindenRequest = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(lindenRequest);
+    Assert.assertEquals(6, result.getTotalHits());
+    Assert.assertEquals("7", result.getHits().get(0).getId());
+    Assert.assertEquals(10.0, result.getHits().get(0).getScore(), 0.001);
+    Assert.assertEquals("{\"id\":\"7\",\"tagstr\":[\"MI4C\",\"MI Note Pro\"]}", result.getHits().get(0).getSource());
   }
 }

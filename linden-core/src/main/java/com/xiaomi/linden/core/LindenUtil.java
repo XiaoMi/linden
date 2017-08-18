@@ -20,6 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -29,9 +33,6 @@ import org.apache.lucene.index.ReaderUtil;
 import org.apache.lucene.search.FieldCache;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.util.Bits;
-
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 
 import com.xiaomi.linden.common.schema.LindenSchemaConf;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
@@ -82,11 +83,11 @@ public class LindenUtil {
   /**
    * Get fields by doc id.
    *
-   * @param indexSearcher      The IndexSearcher
-   * @param docId              Doc ID.
-   * @param id                 Id field value
-   * @param sourceFields       Specify the fields, if null get all fields values.
-   * @param config             the lindenConfig for search
+   * @param indexSearcher The IndexSearcher
+   * @param docId         Doc ID.
+   * @param id            Id field value
+   * @param sourceFields  Specify the fields, if null get all fields values.
+   * @param config        the lindenConfig for search
    * @return JSON String which contains field values.
    * @throws IOException
    */
@@ -98,12 +99,12 @@ public class LindenUtil {
     AtomicReaderContext atomicReaderContext = leaves.get(idx);
     AtomicReader reader = atomicReaderContext.reader();
     int locDocId = docId - atomicReaderContext.docBase;
-    JSONObject json = new JSONObject();
+    JSONObject src = new JSONObject();
     String idFieldName = config.getSchema().getId();
     if (id != null) {
-      json.put(idFieldName, id);
+      src.put(idFieldName, id);
     } else {
-      json.put(idFieldName, FieldCache.DEFAULT.getTerms(reader, idFieldName, false).get(locDocId).utf8ToString());
+      src.put(idFieldName, FieldCache.DEFAULT.getTerms(reader, idFieldName, false).get(locDocId).utf8ToString());
     }
 
     List<LindenFieldSchema> fields = new ArrayList<>();
@@ -123,25 +124,15 @@ public class LindenUtil {
     for (LindenFieldSchema fieldSchema : fields) {
       String name = fieldSchema.getName();
       boolean fieldCache = false;
-      if (fieldSchema.isListCache()) {
-        /**
-         * list cache field is indexed as BinaryDocValuesField, the value is something like "1|2|3|4"
-         * list cache field is parsed to a list in LindenFieldCacheImpl and used in LindenScoreModelStrategy
-         * @see com.xiaomi.linden.lucene.search.LindenFieldCacheImpl
-         * @see com.xiaomi.linden.core.search.query.model.LindenScoreModelStrategy
-         */
-        Bits bits = FieldCache.DEFAULT.getDocsWithField(reader, name);
-        if (bits.get(locDocId)) {
-          json.put(name, FieldCache.DEFAULT.getTerms(reader, name, false).get(locDocId).utf8ToString());
-        }
-      } else if (fieldSchema.isMulti()) {
+      if (fieldSchema.isMulti()) {
         /**
          * multi-field has multiple values, each value is indexed to the document according to field type
          * multi-field source value is in JSONArray format, something like "["MI4","MI Note","RedMI3"]"
-         * multi-field source value can only be retrieved via stored field way
+         * multi-field source value is stored in BinaryDocValues
          */
-        if (fieldSchema.isStored()) {
-          storedFields.put(name, fieldSchema);
+        String blob = FieldCache.DEFAULT.getTerms(reader, name, false).get(locDocId).utf8ToString();
+        if (StringUtils.isNotEmpty(blob)) {
+          src.put(name, JSON.parseArray(blob));
         }
       } else if (fieldSchema.isDocValues()) {
         fieldCache = true;
@@ -152,7 +143,7 @@ public class LindenUtil {
         } else {
           storedFields.put(name, fieldSchema);
         }
-      } else if(fieldSchema.isIndexed()) {
+      } else if (fieldSchema.isIndexed()) {
         if (!possibleTokenizedString(fieldSchema)) {
           fieldCache = true;
         }
@@ -189,25 +180,27 @@ public class LindenUtil {
             throw new IllegalStateException("Unsupported linden type");
         }
         if (fieldCache) {
-          json.put(name, val);
+          src.put(name, val);
         }
       }
     }
 
-    if (!storedFields.isEmpty()) {
+    if (!storedFields.isEmpty())
+
+    {
       Document doc = indexSearcher.doc(docId, storedFields.keySet());
       for (IndexableField field : doc.getFields()) {
         String name = field.name();
         LindenFieldSchema schema = storedFields.get(name);
-        Object obj = json.get(name);
+        Object obj = src.get(name);
         Object val = parseLindenValue(field.stringValue(), storedFields.get(name).getType());
         if (obj == null) {
           if (schema.isMulti()) {
             JSONArray array = new JSONArray();
             array.add(val);
-            json.put(name, array);
+            src.put(name, array);
           } else {
-            json.put(name, val);
+            src.put(name, val);
           }
         } else if (obj instanceof JSONArray) {
           ((JSONArray) obj).add(val);
@@ -215,11 +208,11 @@ public class LindenUtil {
           JSONArray array = new JSONArray();
           array.add(obj);
           array.add(val);
-          json.put(name, array);
+          src.put(name, array);
         }
       }
     }
-    return json.toJSONString();
+    return src.toJSONString();
   }
 
   public static Object parseLindenValue(String value, LindenType type) {

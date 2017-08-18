@@ -60,98 +60,85 @@ public class LindenDocParser {
       String name = field.getSchema().getName();
       Object value;
 
-      // listCache will be stored as String for all type.
-      if (schema.isListCache()) {
-        // listCache field will override schema.isDocValues() to true
-        doc.add(new BinaryDocValuesField(name, new BytesRef(field.getValue())));
-        if (schema.isIndexed()) {
-          FieldType type = new FieldType();
-          type.setTokenized(schema.isTokenized());
-          type.setIndexed(schema.isIndexed());
-          type.setStored(schema.isStored());
-          doc.add(new Field(name, field.getValue(), type));
-        }
-      } else {
-        if (!schema.isIndexed() && schema.isStored()) {
-          doc.add(new Field(name, field.getValue(), STORED_ONLY));
-        }
-        switch (schema.getType()) {
-          case INTEGER:
-            value = Integer.valueOf(field.getValue());
-            if (schema.isIndexed()) {
-              doc.add(new IntField(name, (Integer) value, isStored));
-            }
-            if (schema.isDocValues()) {
-              long docValuesBits = ((Integer) value).longValue();
-              doc.add(new NumericDocValuesField(name, docValuesBits));
-            }
+      if (!schema.isIndexed() && schema.isStored()) {
+        doc.add(new Field(name, field.getValue(), STORED_ONLY));
+      }
+      switch (schema.getType()) {
+        case INTEGER:
+          value = Integer.valueOf(field.getValue());
+          if (schema.isIndexed()) {
+            doc.add(new IntField(name, (Integer) value, isStored));
+          }
+          if (schema.isDocValues()) {
+            long docValuesBits = ((Integer) value).longValue();
+            doc.add(new NumericDocValuesField(name, docValuesBits));
+          }
+          break;
+        case LONG:
+          value = Long.valueOf(field.getValue());
+          if (schema.isIndexed()) {
+            doc.add(new LongField(name, (Long) value, isStored));
+          }
+          if (schema.isDocValues()) {
+            doc.add(new NumericDocValuesField(name, (long) value));
+          }
+          break;
+        case DOUBLE:
+          value = Double.valueOf(field.getValue());
+          if (schema.isIndexed()) {
+            doc.add(new DoubleField(name, (Double) value, isStored));
+          }
+          if (schema.isDocValues()) {
+            long docValuesBits = Double.doubleToLongBits((Double) value);
+            doc.add(new NumericDocValuesField(name, docValuesBits));
+          }
+          break;
+        case FLOAT:
+          value = Float.valueOf(field.getValue());
+          if (schema.isIndexed()) {
+            doc.add(new FloatField(name, (Float) value, isStored));
+          }
+          if (schema.isDocValues()) {
+            long docValuesBits = Float.floatToIntBits((Float) value);
+            doc.add(new NumericDocValuesField(name, docValuesBits));
+          }
+          break;
+        case STRING:
+          if (Strings.isNullOrEmpty(field.getValue())) {
             break;
-          case LONG:
-            value = Long.valueOf(field.getValue());
-            if (schema.isIndexed()) {
-              doc.add(new LongField(name, (Long) value, isStored));
+          }
+          if (schema.isIndexed()) {
+            FieldType type = new FieldType();
+            type.setTokenized(schema.isTokenized());
+            type.setIndexed(schema.isIndexed());
+            type.setStored(schema.isStored());
+            type.setOmitNorms(schema.isOmitNorms());
+            if (schema.isSnippet()) {
+              type.setIndexOptions(FieldInfo.IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
+              // snippet will use the stored info.
+              type.setStored(true);
             }
-            if (schema.isDocValues()) {
-              doc.add(new NumericDocValuesField(name, (long) value));
+            if (schema.isOmitFreqs()) {
+              type.setIndexOptions(FieldInfo.IndexOptions.DOCS_ONLY);
             }
-            break;
-          case DOUBLE:
-            value = Double.valueOf(field.getValue());
-            if (schema.isIndexed()) {
-              doc.add(new DoubleField(name, (Double) value, isStored));
-            }
-            if (schema.isDocValues()) {
-              long docValuesBits = Double.doubleToLongBits((Double) value);
-              doc.add(new NumericDocValuesField(name, docValuesBits));
-            }
-            break;
-          case FLOAT:
-            value = Float.valueOf(field.getValue());
-            if (schema.isIndexed()) {
-              doc.add(new FloatField(name, (Float) value, isStored));
-            }
-            if (schema.isDocValues()) {
-              long docValuesBits = Float.floatToIntBits((Float) value);
-              doc.add(new NumericDocValuesField(name, docValuesBits));
-            }
-            break;
-          case STRING:
-            if (Strings.isNullOrEmpty(field.getValue())) {
-              break;
-            }
-            if (schema.isIndexed()) {
-              FieldType type = new FieldType();
-              type.setTokenized(schema.isTokenized());
-              type.setIndexed(schema.isIndexed());
-              type.setStored(schema.isStored());
-              type.setOmitNorms(schema.isOmitNorms());
-              if (schema.isSnippet()) {
-                type.setIndexOptions(FieldInfo.IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
-                // snippet will use the stored info.
-                type.setStored(true);
-              }
-              if (schema.isOmitFreqs()) {
-                type.setIndexOptions(FieldInfo.IndexOptions.DOCS_ONLY);
-              }
-              doc.add(new Field(name, field.getValue(), type));
-            }
-            if (schema.isDocValues()) {
-              BytesRef bytes = new BytesRef(field.getValue());
-              doc.add(new BinaryDocValuesField(name, bytes));
-            }
-            break;
-          case FACET:
-            String[] facetPath = field.getValue().split("/");
-            doc.add(new FacetField(name, facetPath));
-            if (schema.isIndexed()) {
-              doc.add(new StringField(name, field.getValue(), isStored));
-            }
-            if (schema.isDocValues()) {
-              doc.add(new BinaryDocValuesField(name, new BytesRef(field.getValue())));
-            }
-            break;
-          default:
-        }
+            doc.add(new Field(name, field.getValue(), type));
+          }
+          if (schema.isDocValues()) {
+            BytesRef bytes = new BytesRef(field.getValue());
+            doc.add(new BinaryDocValuesField(name, bytes));
+          }
+          break;
+        case FACET:
+          String[] facetPath = field.getValue().split("/");
+          doc.add(new FacetField(name, facetPath));
+          if (schema.isIndexed()) {
+            doc.add(new StringField(name, field.getValue(), isStored));
+          }
+          if (schema.isDocValues()) {
+            doc.add(new BinaryDocValuesField(name, new BytesRef(field.getValue())));
+          }
+          break;
+        default:
       }
     }
     if (lindenDoc.isSetCoordinate()) {
@@ -165,7 +152,7 @@ public class LindenDocParser {
   }
 
   public static boolean isDocValueFields(LindenDocument lindenDoc) {
-    if (lindenDoc.isSetCoordinate()){
+    if (lindenDoc.isSetCoordinate()) {
       return false;
     }
 
