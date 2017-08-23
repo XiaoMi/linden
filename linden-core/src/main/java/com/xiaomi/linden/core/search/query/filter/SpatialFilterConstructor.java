@@ -32,6 +32,7 @@ import com.xiaomi.linden.thrift.common.LindenFilter;
 import com.xiaomi.linden.thrift.common.LindenSpatialFilter;
 
 public class SpatialFilterConstructor extends FilterConstructor {
+
   private static SpatialContext spatialContext = SpatialContext.GEO;
   private static int maxLevels = 11;
   private static SpatialPrefixTree grid = new GeohashPrefixTree(spatialContext, maxLevels);
@@ -39,16 +40,14 @@ public class SpatialFilterConstructor extends FilterConstructor {
 
   @Override
   protected Filter construct(LindenFilter lindenFilter, LindenConfig config) throws IOException {
-    if (lindenFilter.isSetSpatialFilter()) {
-      LindenSpatialFilter spatialFilter = lindenFilter.getSpatialFilter();
-      SpatialArgs spatialArgs = new SpatialArgs(
-          SpatialOperation.Intersects,
-          spatialContext.makeCircle(
-              spatialFilter.getSpatialParam().coordinate.getLongitude(),
-              spatialFilter.getSpatialParam().coordinate.getLatitude(),
-              DistanceUtils.dist2Degrees(spatialFilter.getSpatialParam().getDistanceRange(), DistanceUtils.EARTH_MEAN_RADIUS_KM)));
-      return spatialStrategy.makeFilter(spatialArgs);
-    }
-    return null;
+    LindenSpatialFilter spatialFilter = lindenFilter.getSpatialFilter();
+    SpatialArgs spatialArgs = new SpatialArgs(
+        SpatialOperation.Intersects,
+        spatialContext.makeCircle(
+            spatialFilter.getSpatialParam().coordinate.getLongitude(),
+            spatialFilter.getSpatialParam().coordinate.getLatitude(),
+            DistanceUtils
+                .dist2Degrees(spatialFilter.getSpatialParam().getDistanceRange(), DistanceUtils.EARTH_MEAN_RADIUS_KM)));
+    return spatialStrategy.makeFilter(spatialArgs);
   }
 }

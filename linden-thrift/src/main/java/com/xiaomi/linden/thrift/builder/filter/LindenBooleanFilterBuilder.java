@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class LindenBooleanFilterBuilder extends LindenFilterBuilder {
+public class LindenBooleanFilterBuilder {
   private List<Map.Entry<LindenFilter, LindenBooleanClause>> filters = new ArrayList<>();
 
   public LindenBooleanFilterBuilder addFilter(LindenFilter filter, LindenBooleanClause clause) {
@@ -32,7 +32,6 @@ public class LindenBooleanFilterBuilder extends LindenFilterBuilder {
     return this;
   }
 
-  @Override
   public LindenFilter build() {
     LindenBooleanFilter booleanFilter = new LindenBooleanFilter();
     for (Map.Entry<LindenFilter, LindenBooleanClause> filter : filters) {

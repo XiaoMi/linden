@@ -25,24 +25,27 @@ public abstract class FilterConstructor {
   private static final FilterConstructor RANGE_FILTER_CONSTRUCTOR = new RangeFilterConstructor();
   private static final FilterConstructor QUERY_FILTER_CONSTRUCTOR = new QueryFilterConstructor();
   private static final FilterConstructor BOOLEAN_FILTER_CONSTRUCTOR = new BooleanFilterConstructor();
-  public static final FilterConstructor SPATIAL_FILTER_CONSTRUCTOR = new SpatialFilterConstructor();
+  private static final FilterConstructor SPATIAL_FILTER_CONSTRUCTOR = new SpatialFilterConstructor();
+  private static final FilterConstructor NOT_NULL_FIELD_FILTER_CONSTRUCTOR = new NotNullFieldFilterConstructor();
 
   public static Filter constructFilter(LindenFilter lindenFilter, LindenConfig config) throws Exception {
-      if (lindenFilter == null) {
-        return null;
-      }
+    if (lindenFilter == null) {
+      return null;
+    }
 
-      if (lindenFilter.isSetTermFilter()) {
-        return TERM_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
-      } else if (lindenFilter.isSetRangeFilter()) {
-        return RANGE_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
-      } else if (lindenFilter.isSetQueryFilter()) {
-        return QUERY_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
-      } else if (lindenFilter.isSetBooleanFilter()) {
-        return BOOLEAN_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
-      } else if (lindenFilter.isSetSpatialFilter()) {
-        return SPATIAL_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
-      }
+    if (lindenFilter.isSetTermFilter()) {
+      return TERM_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
+    } else if (lindenFilter.isSetRangeFilter()) {
+      return RANGE_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
+    } else if (lindenFilter.isSetQueryFilter()) {
+      return QUERY_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
+    } else if (lindenFilter.isSetBooleanFilter()) {
+      return BOOLEAN_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
+    } else if (lindenFilter.isSetSpatialFilter()) {
+      return SPATIAL_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
+    } else if (lindenFilter.isSetNotNullFieldFilter()) {
+      return NOT_NULL_FIELD_FILTER_CONSTRUCTOR.construct(lindenFilter, config);
+    }
     return null;
   }
 

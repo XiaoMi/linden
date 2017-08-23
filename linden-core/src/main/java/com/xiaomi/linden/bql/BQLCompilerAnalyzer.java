@@ -28,10 +28,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.xiaomi.linden.core.LindenUtil;
 import com.xiaomi.linden.thrift.builder.filter.LindenBooleanFilterBuilder;
-import com.xiaomi.linden.thrift.builder.filter.LindenFilterBuilder;
+import com.xiaomi.linden.thrift.builder.filter.LindenNotNullFieldFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenQueryFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenRangeFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenSpatialFilterBuilder;
+import com.xiaomi.linden.thrift.builder.filter.LindenTermFilterBuilder;
 import com.xiaomi.linden.thrift.builder.query.LindenBooleanQueryBuilder;
 import com.xiaomi.linden.thrift.builder.query.LindenQueryBuilder;
 import com.xiaomi.linden.thrift.builder.query.LindenQueryStringQueryBuilder;
@@ -51,6 +52,7 @@ import com.xiaomi.linden.thrift.common.LindenFacetDimAndPath;
 import com.xiaomi.linden.thrift.common.LindenFacetParam;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
 import com.xiaomi.linden.thrift.common.LindenFilter;
+import com.xiaomi.linden.thrift.common.LindenFilteredQuery;
 import com.xiaomi.linden.thrift.common.LindenFlexibleQuery;
 import com.xiaomi.linden.thrift.common.LindenInputParam;
 import com.xiaomi.linden.thrift.common.LindenMatchAllQuery;
@@ -190,7 +192,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
           query = request.getQuery();
         } else if (request.isSetFilter()) {
           query = LindenQueryBuilder.buildFilteredQuery(LindenQueryBuilder.buildMatchAllQuery(),
-              request.getFilter());
+                                                        request.getFilter());
         } else {
           continue;
         }
@@ -212,42 +214,42 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
   public void exitSelect_stmt(BQLParser.Select_stmtContext ctx) {
     if (ctx.order_by_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.order_by_clause(1),
-          "ORDER BY clause can only appear once."));
+                                                                 "ORDER BY clause can only appear once."));
     }
 
     if (ctx.limit_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.limit_clause(1),
-          "LIMIT clause can only appear once."));
+                                                                 "LIMIT clause can only appear once."));
     }
 
     if (ctx.group_by_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.group_by_clause(1),
-          "GROUP BY clause can only appear once."));
+                                                                 "GROUP BY clause can only appear once."));
     }
 
     if (ctx.browse_by_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.browse_by_clause(1),
-          "BROWSE BY clause can only appear once."));
+                                                                 "BROWSE BY clause can only appear once."));
     }
 
     if (ctx.drill_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.drill_clause(1),
-          "DRILL clause can only appear once."));
+                                                                 "DRILL clause can only appear once."));
     }
 
     if (ctx.source_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.source_clause(1),
-          "SOURCE clause can only appear once."));
+                                                                 "SOURCE clause can only appear once."));
     }
 
     if (ctx.route_by_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.route_by_clause(1),
-          "ROUTE BY clause can only appear once."));
+                                                                 "ROUTE BY clause can only appear once."));
     }
 
     if (ctx.score_model_clause().size() > 1) {
       throw new ParseCancellationException(new SemanticException(ctx.score_model_clause(1),
-          "USING SCORE MODEL clause can only appear once."));
+                                                                 "USING SCORE MODEL clause can only appear once."));
     }
 
     LindenSearchRequest lindenRequest = new LindenSearchRequest();
@@ -260,7 +262,9 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
 
     if (ctx.group_by != null) {
       GroupParam groupParam = (GroupParam) valProperty.get(ctx.group_by);
-      if (groupParam != null) lindenRequest.setGroupParam(groupParam);
+      if (groupParam != null) {
+        lindenRequest.setGroupParam(groupParam);
+      }
     }
 
     if (ctx.limit != null) {
@@ -383,8 +387,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         return;
       }
 
-
-      boolean disableCoord = ctx.disable_coord == null? false : (boolean)valProperty.get(ctx.disable_coord);
+      boolean disableCoord = ctx.disable_coord == null ? false : (boolean) valProperty.get(ctx.disable_coord);
       LindenBooleanQueryBuilder booleanQueryBuilder = new LindenBooleanQueryBuilder();
       booleanQueryBuilder.setDisableCoord(disableCoord);
 
@@ -452,7 +455,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         return;
       }
 
-      boolean disableCoord = ctx.disable_coord == null? false : (boolean)valProperty.get(ctx.disable_coord);
+      boolean disableCoord = ctx.disable_coord == null ? false : (boolean) valProperty.get(ctx.disable_coord);
       LindenBooleanQueryBuilder booleanQueryBuilder = new LindenBooleanQueryBuilder();
       booleanQueryBuilder.setDisableCoord(disableCoord);
       if (ctx.boost_by != null && ctx.boost_by.numeric_value().PLACEHOLDER() == null) {
@@ -483,7 +486,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
 
       LindenBooleanFilterBuilder booleanFilterBuilder = new LindenBooleanFilterBuilder();
       for (int i = 0; i < lindenFilters.size(); ++i) {
-          booleanFilterBuilder.addFilter(lindenFilters.get(i), LindenBooleanClause.MUST);
+        booleanFilterBuilder.addFilter(lindenFilters.get(i), LindenBooleanClause.MUST);
       }
       LindenFilter lindenFilter = booleanFilterBuilder.build();
       filterProperty.put(ctx, lindenFilter);
@@ -561,7 +564,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
       switch (type) {
         case STRING:
         case FACET:
-          filter = LindenFilterBuilder.buildTermFilter(col, value);
+          filter = LindenTermFilterBuilder.buildTermFilter(col, value);
           break;
         case INTEGER:
         case LONG:
@@ -599,7 +602,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
       switch (type) {
         case STRING:
         case FACET:
-          builder.addQuery(LindenRangeQueryBuilder.buildTermQuery(col,value),
+          builder.addQuery(LindenRangeQueryBuilder.buildTermQuery(col, value),
                            LindenBooleanClause.MUST_NOT);
           break;
         case INTEGER:
@@ -618,7 +621,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
       switch (type) {
         case STRING:
         case FACET:
-          builder.addFilter(LindenFilterBuilder.buildTermFilter(col, value),
+          builder.addFilter(LindenTermFilterBuilder.buildTermFilter(col, value),
                             LindenBooleanClause.MUST_NOT);
           break;
         case INTEGER:
@@ -659,7 +662,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         valProperty.put(ctx, Long.valueOf(ctx.INTEGER().getText()));
       } catch (NumberFormatException err) {
         throw new ParseCancellationException(new SemanticException(ctx.INTEGER(),
-            "Hit NumberFormatException: " + err.getMessage()));
+                                                                   "Hit NumberFormatException: " + err.getMessage()));
       }
     } else if (ctx.REAL() != null) {
       try {
@@ -669,7 +672,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
                                                                    "Hit NumberFormatException: " + err.getMessage()));
       }
     } else {
-        throw new UnsupportedOperationException("Not yet implemented.");
+      throw new UnsupportedOperationException("Not yet implemented.");
     }
   }
 
@@ -679,7 +682,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
 
     LindenQueryStringQueryBuilder builder = new LindenQueryStringQueryBuilder().setQuery(orig);
     if (ctx.disable_coord != null) {
-      builder.setDisableCoord((Boolean)valProperty.get(ctx.disable_coord));
+      builder.setDisableCoord((Boolean) valProperty.get(ctx.disable_coord));
     }
     if (ctx.AND() != null) {
       builder.setOperator(Operator.AND);
@@ -774,14 +777,16 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
           case INTEGER:
           case FLOAT:
           case DOUBLE:
-            query = LindenRangeQueryBuilder.buildRangeQuery(col, type, clauseEntry.getKey(), clauseEntry.getKey(), true, true);
+            query =
+                LindenRangeQueryBuilder
+                    .buildRangeQuery(col, type, clauseEntry.getKey(), clauseEntry.getKey(), true, true);
             break;
           default:
             throw new ParseCancellationException("IN predicate doesn't support this type " + type);
         }
         builder.addQuery(query, clauseEntry.getValue());
       }
-      queryProperty.put(ctx,  builder.build());
+      queryProperty.put(ctx, builder.build());
     } else {
       LindenBooleanFilterBuilder builder = new LindenBooleanFilterBuilder();
       for (Map.Entry<String, LindenBooleanClause> clauseEntry : subClauses) {
@@ -789,20 +794,22 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         switch (type) {
           case STRING:
           case FACET:
-            filter = LindenFilterBuilder.buildTermFilter(col, clauseEntry.getKey());
+            filter = LindenTermFilterBuilder.buildTermFilter(col, clauseEntry.getKey());
             break;
           case LONG:
           case INTEGER:
           case FLOAT:
           case DOUBLE:
-            filter = LindenRangeFilterBuilder.buildRangeFilter(col, type, clauseEntry.getKey(), clauseEntry.getKey(), true, true);
+            filter =
+                LindenRangeFilterBuilder
+                    .buildRangeFilter(col, type, clauseEntry.getKey(), clauseEntry.getKey(), true, true);
             break;
           default:
             throw new ParseCancellationException("IN predicate doesn't support this type " + type);
         }
         builder.addFilter(filter, clauseEntry.getValue());
       }
-      filterProperty.put(ctx,  builder.build());
+      filterProperty.put(ctx, builder.build());
     }
   }
 
@@ -903,7 +910,9 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         if (ctx.python_style_value().python_style_dict() != null) {
           LindenType leftType = (LindenType) valProperty.get(ctx.type().map_type().left);
           LindenType rightType = (LindenType) valProperty.get(ctx.type().map_type().rigth);
-          Map<String, String> kvMap = (Map<String, String>) valProperty.get(ctx.python_style_value().python_style_dict());
+          Map<String, String>
+              kvMap =
+              (Map<String, String>) valProperty.get(ctx.python_style_value().python_style_dict());
           Map<LindenValue, LindenValue> lindenValueMap = new HashMap<>();
           for (Map.Entry<String, String> entry : kvMap.entrySet()) {
             LindenValue left = getLindenValue(leftType, entry.getKey());
@@ -966,7 +975,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     valProperty.put(ctx, ctx.IDENT().getText());
   }
 
-  @Override public void exitFlexible_query_predicate(BQLParser.Flexible_query_predicateContext ctx) {
+  @Override
+  public void exitFlexible_query_predicate(BQLParser.Flexible_query_predicateContext ctx) {
     String orig = unescapeStringLiteral(ctx.STRING_LITERAL());
 
     LindenScoreModel lindenScoreModel = new LindenScoreModel()
@@ -986,7 +996,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     lindenFlexibleQuery.setModel(lindenScoreModel);
     if (ctx.fm != null) {
       lindenFlexibleQuery.setFullMatch(true);
-    } else if (ctx.mrt != null && ctx.mrt.PLACEHOLDER() == null){
+    } else if (ctx.mrt != null && ctx.mrt.PLACEHOLDER() == null) {
       double ratio = Double.valueOf(ctx.mrt.getText());
       lindenFlexibleQuery.setMatchRatio(ratio);
     }
@@ -1005,7 +1015,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     }
   }
 
-  @Override public void exitFlexible_fields(BQLParser.Flexible_fieldsContext ctx) {
+  @Override
+  public void exitFlexible_fields(BQLParser.Flexible_fieldsContext ctx) {
     List<LindenSearchField> fields = new ArrayList<>();
     for (BQLParser.Flexible_fieldContext field : ctx.flexible_field()) {
       fields.add((LindenSearchField) valProperty.get(field));
@@ -1063,18 +1074,18 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
 
   @Override
   public void exitExplain_clause(BQLParser.Explain_clauseContext ctx) {
-    if (ctx.e1 != null && ctx.PLACEHOLDER() != null)
+    if (ctx.e1 != null && ctx.PLACEHOLDER() != null) {
       valProperty.put(ctx, false);
-    else
+    } else {
       valProperty.put(ctx, ctx.FALSE() == null);
+    }
   }
 
   @Override
   public void exitSource_clause(BQLParser.Source_clauseContext ctx) {
     if (ctx.PLACEHOLDER() != null) {
       valProperty.put(ctx, false);
-    }
-    else {
+    } else {
       valProperty.put(ctx, ctx.FALSE() == null);
     }
   }
@@ -1084,7 +1095,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     valProperty.put(ctx, valProperty.get(ctx.sort_specs()));
   }
 
-  @Override public void exitSort_specs(BQLParser.Sort_specsContext ctx) {
+  @Override
+  public void exitSort_specs(BQLParser.Sort_specsContext ctx) {
     LindenSort lindenSort = new LindenSort();
     for (BQLParser.Sort_specContext sortCtx : ctx.sort_spec()) {
       lindenSort.addToFields((LindenSortField) valProperty.get(sortCtx));
@@ -1183,7 +1195,6 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
           "Value: " + val + " in RANGE predicate doesn't correspond to field type: " + type);
     }
 
-
     String strVal1;
     String strVal2;
     boolean isStartClosed = false;
@@ -1203,10 +1214,14 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     }
 
     if (inQueryWhere) {
-      LindenQuery query = LindenRangeQueryBuilder.buildRangeQuery(col, type, strVal1, strVal2, isStartClosed, isEndClosed);
+      LindenQuery
+          query =
+          LindenRangeQueryBuilder.buildRangeQuery(col, type, strVal1, strVal2, isStartClosed, isEndClosed);
       queryProperty.put(ctx, query);
     } else {
-      LindenFilter filter = LindenRangeFilterBuilder.buildRangeFilter(col, type, strVal1, strVal2, isStartClosed, isEndClosed);
+      LindenFilter
+          filter =
+          LindenRangeFilterBuilder.buildRangeFilter(col, type, strVal1, strVal2, isStartClosed, isEndClosed);
       filterProperty.put(ctx, filter);
     }
   }
@@ -1222,7 +1237,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     LindenType type = fieldNameAndType.getValue();
     if (type != LindenType.STRING && type != LindenType.FACET) {
       throw new ParseCancellationException(new SemanticException(ctx.column_name(),
-          "Non-string type column \"" + col + "\" can not be used in LIKE predicates."));
+                                                                 "Non-string type column \"" + col
+                                                                 + "\" can not be used in LIKE predicates."));
     }
     col = fieldNameAndType.getKey();
 
@@ -1244,7 +1260,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
       if (ctx.NOT() != null) {
         LindenBooleanFilter booleanFilter = new LindenBooleanFilter();
         booleanFilter.addToFilters(new LindenBooleanSubFilter().setFilter(filter)
-            .setClause(LindenBooleanClause.MUST_NOT));
+                                       .setClause(LindenBooleanClause.MUST_NOT));
         filter = new LindenFilter().setBooleanFilter(booleanFilter);
       }
       filterProperty.put(ctx, filter);
@@ -1255,61 +1271,20 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
   public void exitNull_predicate(BQLParser.Null_predicateContext ctx) {
     String col = unescapeColumnName(ctx.column_name());
     Map.Entry<String, LindenType> fieldNameAndType = getFieldNameAndType(col);
-    LindenType type = fieldNameAndType.getValue();
     col = fieldNameAndType.getKey();
-    String startValue, endValue;
-    boolean isStartClosed = true, isEndClosed = true;
-    switch (type) {
-      case STRING:
-      case FACET:
-        startValue = null;
-        endValue = null;
-        isStartClosed = false;
-        isEndClosed = false;
-        break;
-      case INTEGER:
-        startValue = String.valueOf(Integer.MIN_VALUE);
-        endValue = String.valueOf(Integer.MAX_VALUE);
-        break;
-      case LONG:
-        startValue = String.valueOf(Long.MIN_VALUE);
-        endValue = String.valueOf(Long.MAX_VALUE);
-        break;
-      case FLOAT:
-        startValue = String.valueOf(Float.MIN_VALUE);
-        endValue = String.valueOf(Float.MAX_VALUE);
-        break;
-      case DOUBLE:
-        startValue = String.valueOf(Double.MIN_VALUE);
-        endValue = String.valueOf(Double.MAX_VALUE);
-        break;
-      default:
-        throw new ParseCancellationException("NULL predicate doesn't support this type " + type);
+
+    LindenFilter filter;
+    if (ctx.NOT() != null) {
+      filter = LindenNotNullFieldFilterBuilder.buildNotNullFieldFilterBuilder(col, false);
+    } else {
+      filter = LindenNotNullFieldFilterBuilder.buildNotNullFieldFilterBuilder(col, true);
     }
 
     if (inQueryWhere) {
-      LindenQuery rangeQuery =
-          LindenRangeQueryBuilder.buildRangeQuery(col, type, startValue, endValue, isStartClosed, isEndClosed);
-      if (ctx.NOT() != null) {
-        queryProperty.put(ctx, rangeQuery);
-      } else {
-        LindenBooleanQueryBuilder builder = new LindenBooleanQueryBuilder();
-        builder.addQuery(LindenQueryBuilder.buildMatchAllQuery(),
-                         LindenBooleanClause.MUST);
-        builder.addQuery(LindenRangeQueryBuilder.buildRangeQuery(col, type, startValue, endValue, isStartClosed, isEndClosed),
-                         LindenBooleanClause.MUST_NOT);
-        queryProperty.put(ctx, builder.build());
-      }
+      LindenQuery query = LindenQueryBuilder.buildFilteredQuery(LindenQueryBuilder.buildMatchAllQuery(), filter);
+      queryProperty.put(ctx, query);
     } else {
-      LindenFilter rangeFilter =
-          LindenRangeFilterBuilder.buildRangeFilter(col, type, startValue, endValue, isStartClosed, isEndClosed);
-      if (ctx.NOT() != null) {
-        filterProperty.put(ctx, rangeFilter);
-      } else {
-        LindenBooleanFilterBuilder builder = new LindenBooleanFilterBuilder();
-        builder.addFilter(rangeFilter, LindenBooleanClause.MUST_NOT);
-        filterProperty.put(ctx, builder.build());
-      }
+      filterProperty.put(ctx, filter);
     }
   }
 
@@ -1342,8 +1317,9 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
         String col = unescapeColumnName(colCtx);
         selections.add(col);
       }
-      if (!selections.isEmpty())
+      if (!selections.isEmpty()) {
         valProperty.put(ctx, selections);
+      }
     }
   }
 
@@ -1361,7 +1337,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     SearchRouteParam routeParam = new SearchRouteParam();
     // shard route param
     if (ctx.route_shard_clause() != null) {
-      routeParam.setShardParams((List<ShardRouteParam>)valProperty.get(ctx.route_shard_clause()));
+      routeParam.setShardParams((List<ShardRouteParam>) valProperty.get(ctx.route_shard_clause()));
     }
     // key route param
     if (ctx.route_replica_clause() != null) {
@@ -1380,7 +1356,9 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
           shardRouteParams.add(shardRouteParam);
         }
       } else if (route.route_multi_shard_values() != null) {
-        List<ShardRouteParam> multiShardRouteParams = (List<ShardRouteParam>) valProperty.get(route.route_multi_shard_values());
+        List<ShardRouteParam>
+            multiShardRouteParams =
+            (List<ShardRouteParam>) valProperty.get(route.route_multi_shard_values());
         if (multiShardRouteParams != null) {
           shardRouteParams.addAll(multiShardRouteParams);
         }
@@ -1427,8 +1405,9 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
       }
       params.add(shardRouteParam);
     }
-    if (!params.isEmpty())
+    if (!params.isEmpty()) {
       valProperty.put(ctx, params);
+    }
   }
 
   @Override
@@ -1458,7 +1437,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
   @Override
   public void exitPython_style_dict(BQLParser.Python_style_dictContext ctx) {
     Map<String, String> kvMap = new HashMap<>();
-    for (BQLParser.Key_value_pairContext kvCtx: ctx.key_value_pair()) {
+    for (BQLParser.Key_value_pairContext kvCtx : ctx.key_value_pair()) {
       String key = unescapeStringLiteral(kvCtx.STRING_LITERAL());
       kvMap.put(key, kvCtx.value().getText());
     }
@@ -1488,7 +1467,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     LindenType type = fieldNameAndType.getValue();
     if (type != LindenType.FACET) {
       throw new ParseCancellationException(new SemanticException(ctx.column_name(),
-          "Non-facet type column \"" + col + "\" can not be used in browse predicates."));
+                                                                 "Non-facet type column \"" + col
+                                                                 + "\" can not be used in browse predicates."));
     }
     col = fieldNameAndType.getKey();
 
@@ -1548,7 +1528,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     LindenType type = fieldNameAndType.getValue();
     if (type != LindenType.INTEGER && type != LindenType.LONG && type != LindenType.DOUBLE) {
       throw new ParseCancellationException(new SemanticException(ctx.column_name(),
-          "Aggregation doesn't support the type of the field \"" + col + "\"."));
+                                                                 "Aggregation doesn't support the type of the field \""
+                                                                 + col + "\"."));
     }
     col = fieldNameAndType.getKey();
 
@@ -1556,7 +1537,7 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     aggregation.setField(col);
     aggregation.setType(type);
     for (BQLParser.Bucket_specContext specContext : ctx.bucket_spec()) {
-      Bucket bucket = (Bucket)valProperty.get(specContext);
+      Bucket bucket = (Bucket) valProperty.get(specContext);
       if (bucket != null) {
         aggregation.addToBuckets(bucket);
       }
@@ -1566,11 +1547,11 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
 
   @Override
   public void exitDrill_clause(BQLParser.Drill_clauseContext ctx) {
-      if (ctx.DOWN() != null) {
-        facetRequest.setFacetDrillingType(FacetDrillingType.DRILLDOWN);
-      } else {
-        facetRequest.setFacetDrillingType(FacetDrillingType.DRILLSIDEWAYS);
-      }
+    if (ctx.DOWN() != null) {
+      facetRequest.setFacetDrillingType(FacetDrillingType.DRILLDOWN);
+    } else {
+      facetRequest.setFacetDrillingType(FacetDrillingType.DRILLSIDEWAYS);
+    }
   }
 
   @Override
@@ -1581,7 +1562,8 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     LindenType type = fieldNameAndType.getValue();
     if (type != LindenType.FACET) {
       throw new ParseCancellationException(new SemanticException(ctx.column_name(),
-          "Non-facet type column \"" + col + "\" can not be used in drill spec."));
+                                                                 "Non-facet type column \"" + col
+                                                                 + "\" can not be used in drill spec."));
     }
     col = fieldNameAndType.getKey();
 

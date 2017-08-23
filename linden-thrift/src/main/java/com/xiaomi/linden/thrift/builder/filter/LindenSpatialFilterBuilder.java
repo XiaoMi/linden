@@ -19,7 +19,7 @@ import com.xiaomi.linden.thrift.common.LindenFilter;
 import com.xiaomi.linden.thrift.common.LindenSpatialFilter;
 import com.xiaomi.linden.thrift.common.SpatialParam;
 
-public class LindenSpatialFilterBuilder extends LindenFilterBuilder {
+public class LindenSpatialFilterBuilder {
   public static LindenFilter buildSpatialParam(SpatialParam spatialParam) {
     return new LindenFilter().setSpatialFilter(new LindenSpatialFilter(spatialParam));
   }
@@ -29,10 +29,5 @@ public class LindenSpatialFilterBuilder extends LindenFilterBuilder {
         .setCoordinate(new Coordinate(longitude, latitude))
         .setDistanceRange(range);
     return buildSpatialParam(spatialParam);
-  }
-
-  @Override
-  public LindenFilter build() {
-    return null;
   }
 }

@@ -33,39 +33,37 @@ import com.xiaomi.linden.thrift.common.LindenRangeFilter;
 import com.xiaomi.linden.thrift.common.LindenType;
 
 public class RangeFilterConstructor extends FilterConstructor {
+
   @Override
   protected Filter construct(LindenFilter lindenFilter, LindenConfig config) throws IOException {
-    if (lindenFilter.isSetRangeFilter()) {
-      LindenRangeFilter lindenRangeFilter = lindenFilter.getRangeFilter();
-      LindenRange range = lindenRangeFilter.getRange();
-      LindenType type = range.getType();
-      String start = range.getStartValue();
-      String end = range.getEndValue();
-      String fieldName = range.getField();
-      boolean startClose = range.isStartClosed();
-      boolean endClose = range.isEndClosed();
+    LindenRangeFilter lindenRangeFilter = lindenFilter.getRangeFilter();
+    LindenRange range = lindenRangeFilter.getRange();
+    LindenType type = range.getType();
+    String start = range.getStartValue();
+    String end = range.getEndValue();
+    String fieldName = range.getField();
+    boolean startClose = range.isStartClosed();
+    boolean endClose = range.isEndClosed();
 
-      Filter filter = null;
-      switch (type) {
-        case STRING:
-        case FACET:
-          filter = new TermRangeFilter(fieldName, bytesRefVal(start), bytesRefVal(end), startClose, endClose);
-          break;
-        case INTEGER:
-          filter = NumericRangeFilter.newIntRange(fieldName, intVal(start), intVal(end), startClose, endClose);
-          break;
-        case LONG:
-          filter = NumericRangeFilter.newLongRange(fieldName, longVal(start), longVal(end), startClose, endClose);
-          break;
-        case DOUBLE:
-          filter = NumericRangeFilter.newDoubleRange(fieldName, doubleVal(start), doubleVal(end), startClose, endClose);
-          break;
-        case FLOAT:
-          filter = NumericRangeFilter.newFloatRange(fieldName, floatVal(start), floatVal(end), startClose, endClose);
-          break;
-      }
-      return filter;
+    Filter filter = null;
+    switch (type) {
+      case STRING:
+      case FACET:
+        filter = new TermRangeFilter(fieldName, bytesRefVal(start), bytesRefVal(end), startClose, endClose);
+        break;
+      case INTEGER:
+        filter = NumericRangeFilter.newIntRange(fieldName, intVal(start), intVal(end), startClose, endClose);
+        break;
+      case LONG:
+        filter = NumericRangeFilter.newLongRange(fieldName, longVal(start), longVal(end), startClose, endClose);
+        break;
+      case DOUBLE:
+        filter = NumericRangeFilter.newDoubleRange(fieldName, doubleVal(start), doubleVal(end), startClose, endClose);
+        break;
+      case FLOAT:
+        filter = NumericRangeFilter.newFloatRange(fieldName, floatVal(start), floatVal(end), startClose, endClose);
+        break;
     }
-    return null;
+    return filter;
   }
 }

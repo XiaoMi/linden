@@ -20,10 +20,12 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.xiaomi.linden.core.search.query.FilteredQueryConstructor;
 import com.xiaomi.linden.thrift.builder.filter.LindenBooleanFilterBuilder;
-import com.xiaomi.linden.thrift.builder.filter.LindenFilterBuilder;
+import com.xiaomi.linden.thrift.builder.filter.LindenNotNullFieldFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenRangeFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenSpatialFilterBuilder;
+import com.xiaomi.linden.thrift.builder.filter.LindenTermFilterBuilder;
 import com.xiaomi.linden.thrift.builder.query.LindenBooleanQueryBuilder;
 import com.xiaomi.linden.thrift.builder.query.LindenQueryBuilder;
 import com.xiaomi.linden.thrift.builder.query.LindenQueryStringQueryBuilder;
@@ -41,8 +43,10 @@ import com.xiaomi.linden.thrift.common.LindenFacetDimAndPath;
 import com.xiaomi.linden.thrift.common.LindenFacetParam;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
 import com.xiaomi.linden.thrift.common.LindenFilter;
+import com.xiaomi.linden.thrift.common.LindenFilteredQuery;
 import com.xiaomi.linden.thrift.common.LindenFlexibleQuery;
 import com.xiaomi.linden.thrift.common.LindenInputParam;
+import com.xiaomi.linden.thrift.common.LindenNotNullFieldFilter;
 import com.xiaomi.linden.thrift.common.LindenQuery;
 import com.xiaomi.linden.thrift.common.LindenQueryFilter;
 import com.xiaomi.linden.thrift.common.LindenRange;
@@ -536,7 +540,7 @@ public class TestBQL {
     String bql = "SELECT * FROM linden  WHERE title <> 'red'";
     LindenSearchRequest lindenRequest = compiler.compile(bql).getSearchRequest();
     LindenBooleanFilter booleanFilter = new LindenBooleanFilter();
-    LindenFilter termFilter = LindenFilterBuilder.buildTermFilter("title", "red");
+    LindenFilter termFilter = LindenTermFilterBuilder.buildTermFilter("title", "red");
     booleanFilter.addToFilters(
         new LindenBooleanSubFilter().setFilter(termFilter).setClause(LindenBooleanClause.MUST_NOT));
     Assert.assertEquals(booleanFilter, lindenRequest.getFilter().getBooleanFilter());
@@ -544,7 +548,7 @@ public class TestBQL {
     bql = "SELECT * FROM linden  WHERE title <> 're''d'";
     lindenRequest = compiler.compile(bql).getSearchRequest();
     booleanFilter = new LindenBooleanFilter();
-    termFilter = LindenFilterBuilder.buildTermFilter("title", "re'd");
+    termFilter = LindenTermFilterBuilder.buildTermFilter("title", "re'd");
     booleanFilter.addToFilters(
         new LindenBooleanSubFilter().setFilter(termFilter).setClause(LindenBooleanClause.MUST_NOT));
     Assert.assertEquals(booleanFilter, lindenRequest.getFilter().getBooleanFilter());
@@ -576,31 +580,22 @@ public class TestBQL {
   }
 
   @Test
-  public void testNullPred() throws Exception {
+  public void testNullPredicate() throws Exception {
     String bql = "SELECT * FROM linden  WHERE id IS NOT NULL";
     LindenSearchRequest lindenRequest = compiler.compile(bql).getSearchRequest();
-    LindenFilter rangeFilter = LindenRangeFilterBuilder
-        .buildRangeFilter("id", LindenType.LONG, String.valueOf(Long.MIN_VALUE), String.valueOf(Long.MAX_VALUE), true,
-                          true);
-    Assert.assertEquals(rangeFilter, lindenRequest.getFilter());
+    LindenFilter filter = LindenNotNullFieldFilterBuilder.buildNotNullFieldFilterBuilder("id", false);
+    Assert.assertEquals(filter, lindenRequest.getFilter());
 
     bql = "SELECT * FROM linden WHERE title IS NULL";
     lindenRequest = compiler.compile(bql).getSearchRequest();
-    rangeFilter = LindenRangeFilterBuilder
-        .buildRangeFilter("title", LindenType.STRING, null, null, false, false);
-    LindenBooleanFilter booleanFilter = new LindenBooleanFilter();
-    booleanFilter.addToFilters(new LindenBooleanSubFilter().setFilter(rangeFilter)
-        .setClause(LindenBooleanClause.MUST_NOT));
-    Assert.assertEquals(booleanFilter, lindenRequest.getFilter().getBooleanFilter());
+    filter = LindenNotNullFieldFilterBuilder.buildNotNullFieldFilterBuilder("title", true);
+    Assert.assertEquals(filter, lindenRequest.getFilter());
 
     bql = "SELECT * FROM linden by title IS NULL";
     lindenRequest = compiler.compile(bql).getSearchRequest();
-    LindenBooleanQueryBuilder builder = new LindenBooleanQueryBuilder();
-    builder.addQuery(LindenQueryBuilder.buildMatchAllQuery(),
-                     LindenBooleanClause.MUST);
-    builder.addQuery(LindenRangeQueryBuilder.buildRangeQuery("title", LindenType.STRING, null, null, false, false),
-                     LindenBooleanClause.MUST_NOT);
-    Assert.assertEquals(builder.build(), lindenRequest.getQuery());
+    filter = LindenNotNullFieldFilterBuilder.buildNotNullFieldFilterBuilder("title", true);
+    LindenQuery query = LindenQueryBuilder.buildFilteredQuery(LindenQueryBuilder.buildMatchAllQuery(), filter);
+    Assert.assertEquals(query, lindenRequest.getQuery());
   }
 
   @Test
@@ -901,7 +896,7 @@ public class TestBQL {
     bql = "SELECT * FROM linden WHERE `source` <> 'red'";
     lindenRequest = compiler.compile(bql).getSearchRequest();
     booleanFilter = new LindenBooleanFilter();
-    LindenFilter termFilter = LindenFilterBuilder.buildTermFilter("source", "red");
+    LindenFilter termFilter = LindenTermFilterBuilder.buildTermFilter("source", "red");
     booleanFilter
         .addToFilters(new LindenBooleanSubFilter().setFilter(termFilter).setClause(LindenBooleanClause.MUST_NOT));
     Assert.assertEquals(booleanFilter, lindenRequest.getFilter().getBooleanFilter());
@@ -909,9 +904,9 @@ public class TestBQL {
     bql = "select * from linden where `explain` in (1, 2, 3)";
     lindenRequest = compiler.compile(bql).getSearchRequest();
     LindenBooleanFilterBuilder builder = new LindenBooleanFilterBuilder();
-    builder.addFilter(LindenRangeFilterBuilder.buildTermFilter("explain", "1"), LindenBooleanClause.SHOULD);
-    builder.addFilter(LindenRangeFilterBuilder.buildTermFilter("explain", "2"), LindenBooleanClause.SHOULD);
-    builder.addFilter(LindenRangeFilterBuilder.buildTermFilter("explain", "3"), LindenBooleanClause.SHOULD);
+    builder.addFilter(LindenTermFilterBuilder.buildTermFilter("explain", "1"), LindenBooleanClause.SHOULD);
+    builder.addFilter(LindenTermFilterBuilder.buildTermFilter("explain", "2"), LindenBooleanClause.SHOULD);
+    builder.addFilter(LindenTermFilterBuilder.buildTermFilter("explain", "3"), LindenBooleanClause.SHOULD);
     LindenFilter expected = builder.build();
     Assert.assertEquals(expected, lindenRequest.getFilter());
 

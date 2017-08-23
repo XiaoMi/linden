@@ -28,10 +28,7 @@ public class TermFilterConstructor extends FilterConstructor {
 
   @Override
   protected Filter construct(LindenFilter lindenFilter, LindenConfig config) throws IOException {
-    if (lindenFilter.isSetTermFilter()) {
-      LindenTermFilter termFilter = lindenFilter.getTermFilter();
-      return new TermFilter(new Term(termFilter.getTerm().getField(), termFilter.getTerm().getValue()));
-    }
-    return null;
+    LindenTermFilter termFilter = lindenFilter.getTermFilter();
+    return new TermFilter(new Term(termFilter.getTerm().getField(), termFilter.getTerm().getValue()));
   }
 }

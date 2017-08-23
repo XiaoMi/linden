@@ -337,6 +337,41 @@ public class TestLindenCore extends TestLindenCoreBase {
     request = bqlCompiler.compile(bql).getSearchRequest();
     result = lindenCore.search(request);
     Assert.assertEquals(2, result.getTotalHits());
+
+    bql = "select * from linden where cat3 is null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(6, result.getTotalHits());
+
+    bql = "select * from linden where cat3 is not null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(0, result.getTotalHits());
+
+    bql = "select * from linden where tagstr is null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(3, result.getTotalHits());
+
+    bql = "select * from linden where tagstr is not null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(3, result.getTotalHits());
+
+    bql = "select * from linden where id is not null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(6, result.getTotalHits());
+
+    bql = "select * from linden where hotwords is not null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(0, result.getTotalHits());
+
+    bql = "select * from linden where hotwords is null";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(6, result.getTotalHits());
   }
 
   @Test

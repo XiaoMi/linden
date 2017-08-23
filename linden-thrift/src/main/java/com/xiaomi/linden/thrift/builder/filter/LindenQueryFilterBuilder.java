@@ -18,14 +18,9 @@ import com.xiaomi.linden.thrift.common.LindenFilter;
 import com.xiaomi.linden.thrift.common.LindenQuery;
 import com.xiaomi.linden.thrift.common.LindenQueryFilter;
 
-public class LindenQueryFilterBuilder extends LindenFilterBuilder {
-  public static LindenFilter buildQueryFilter(LindenQuery lindenQuery) {
-    return new LindenFilter().setQueryFilter(
-            new LindenQueryFilter(lindenQuery));
-  }
+public class LindenQueryFilterBuilder {
 
-  @Override
-  public LindenFilter build() {
-    return null;
+  public static LindenFilter buildQueryFilter(LindenQuery lindenQuery) {
+    return new LindenFilter().setQueryFilter(new LindenQueryFilter(lindenQuery));
   }
 }

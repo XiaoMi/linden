@@ -25,11 +25,8 @@ public class QueryFilterConstructor extends FilterConstructor {
 
   @Override
   protected Filter construct(LindenFilter lindenFilter, LindenConfig config) throws Exception {
-    if (lindenFilter.isSetQueryFilter()) {
-      QueryWrapperFilter filter = new QueryWrapperFilter(
-          QueryConstructor.constructQuery(lindenFilter.getQueryFilter().getQuery(), config));
-      return filter;
-    }
-    return null;
+    QueryWrapperFilter filter = new QueryWrapperFilter(
+        QueryConstructor.constructQuery(lindenFilter.getQueryFilter().getQuery(), config));
+    return filter;
   }
 }

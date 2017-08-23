@@ -19,10 +19,10 @@ import com.xiaomi.linden.thrift.common.LindenRange;
 import com.xiaomi.linden.thrift.common.LindenRangeFilter;
 import com.xiaomi.linden.thrift.common.LindenType;
 
-public class LindenRangeFilterBuilder extends LindenFilterBuilder {
+public class LindenRangeFilterBuilder {
 
   public static LindenFilter buildRangeFilter(String field, LindenType type, String startValue, String endValue,
-                                               boolean isStartClosed, boolean isEndClosed) {
+                                              boolean isStartClosed, boolean isEndClosed) {
     LindenRangeFilter rangeFilter = new LindenRangeFilter(new LindenRange(field, type, isStartClosed, isEndClosed));
     if (startValue != null) {
       rangeFilter.getRange().setStartValue(startValue);
@@ -31,10 +31,5 @@ public class LindenRangeFilterBuilder extends LindenFilterBuilder {
       rangeFilter.getRange().setEndValue(endValue);
     }
     return new LindenFilter().setRangeFilter(rangeFilter);
-  }
-
-  @Override
-  public LindenFilter build(){
-     return null;
   }
 }

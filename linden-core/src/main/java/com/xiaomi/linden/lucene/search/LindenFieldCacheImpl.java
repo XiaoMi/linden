@@ -29,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.SegmentReader;
@@ -36,6 +37,7 @@ import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.FieldCache;
 import org.apache.lucene.util.Accountable;
@@ -95,6 +97,7 @@ public class LindenFieldCacheImpl implements FieldCache {
     caches.put(DoubleList.class, new DoubleListCache(this));
     caches.put(StringList.class, new StringListCache(this));
     caches.put(StoredStrings.class, new StoredStringCache(this));
+    caches.put(NotNullFieldDocIdSet.class, new NotNullFieldDocIdSetCache(this));
   }
 
   public UIDMaps getUIDMaps(IndexReaderContext topReaderContext, String uidField) throws IOException {
@@ -128,6 +131,10 @@ public class LindenFieldCacheImpl implements FieldCache {
 
   public StoredStrings getStoredStrings(AtomicReader reader, String field) throws IOException {
     return (StoredStrings) caches.get(StoredStrings.class).get(reader, new CacheKey(field, null), false);
+  }
+
+  public NotNullFieldDocIdSet getNotNullFieldDocIdSet(AtomicReader reader, String field) throws IOException {
+    return (NotNullFieldDocIdSet) caches.get(NotNullFieldDocIdSet.class).get(reader, new CacheKey(field, null), false);
   }
 
   final SegmentReader.CoreClosedListener purgeCore = new SegmentReader.CoreClosedListener() {
@@ -894,6 +901,97 @@ public class LindenFieldCacheImpl implements FieldCache {
     @Override
     public long ramBytesUsed() {
       return 0;
+    }
+  }
+
+  public static class NotNullFieldDocIdSet extends DocIdSet {
+
+    private DocIdSet underlying;
+
+    public NotNullFieldDocIdSet(DocIdSet docIdSet) {
+      this.underlying = docIdSet;
+    }
+
+    public DocIdSet getDocIdSet() {
+      return underlying;
+    }
+
+    @Override
+    public Bits bits() throws IOException {
+      return underlying.bits();
+    }
+
+    @Override
+    public DocIdSetIterator iterator() throws IOException {
+      return underlying.iterator();
+    }
+  }
+
+
+  public static class NotNullFieldDocIdSetCache extends Cache {
+
+    NotNullFieldDocIdSetCache(LindenFieldCacheImpl wrapper) {
+      super(wrapper);
+    }
+
+    @Override
+    protected Accountable createValue(final AtomicReader reader, CacheKey key, boolean setDocsWithField)
+        throws IOException {
+      final String field = key.field;
+      final int maxDoc = reader.maxDoc();
+
+      FixedBitSet bitSet = new FixedBitSet(maxDoc);
+      NotNullFieldDocIdSet res = new NotNullFieldDocIdSet(bitSet);
+      final FieldInfo fieldInfo = reader.getFieldInfos().fieldInfo(key.field);
+      if (fieldInfo == null) {
+        // field does not exist or has no value
+        return res;
+      } else if (fieldInfo.hasDocValues()) {
+        Bits bits = reader.getDocsWithField(key.field);
+        if (bits == null) {
+          return res;
+        } else {
+          for (int i = 0; i < maxDoc; ++i) {
+            if (bits.get(i)) {
+              bitSet.set(i);
+            }
+          }
+          return res;
+        }
+      } else if (!fieldInfo.isIndexed()) {
+        return res;
+      }
+
+      // Visit all docs that have terms for this field
+      Terms terms = reader.terms(field);
+      if (terms != null) {
+        final int termsDocCount = terms.getDocCount();
+        assert termsDocCount <= maxDoc;
+        if (termsDocCount == maxDoc) {
+          // Fast case: all docs have this field
+          bitSet.set(0, maxDoc);
+          return res;
+        }
+
+        final TermsEnum termsEnum = terms.iterator(null);
+        DocsEnum docs = null;
+        while (true) {
+          final BytesRef term = termsEnum.next();
+          if (term == null) {
+            break;
+          }
+          docs = termsEnum.docs(null, docs, DocsEnum.FLAG_NONE);
+          while (true) {
+            final int docID = docs.nextDoc();
+            if (docID == DocIdSetIterator.NO_MORE_DOCS) {
+              break;
+            }
+            // set this bit
+            bitSet.set(docID);
+          }
+        }
+      }
+      return res;
     }
   }
 }

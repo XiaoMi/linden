@@ -235,7 +235,7 @@ public class LindenUtil {
 
   private static boolean actualContain(AtomicReader reader, String field, int locDocId) {
     try {
-      // index really contain such field of this doc
+      // index really contains such field of this doc
       return FieldCache.DEFAULT.getDocsWithField(reader, field).get(locDocId);
     } catch (IOException e) {
       return false;

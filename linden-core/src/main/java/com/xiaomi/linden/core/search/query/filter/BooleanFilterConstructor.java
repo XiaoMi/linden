@@ -28,24 +28,21 @@ public class BooleanFilterConstructor extends FilterConstructor {
 
   @Override
   protected Filter construct(LindenFilter lindenFilter, LindenConfig config) throws Exception {
-    if (lindenFilter.isSetBooleanFilter()) {
-      List<LindenBooleanSubFilter> booleanSubFilterList = lindenFilter.getBooleanFilter().getFilters();
-      BooleanFilter booleanFilter = new BooleanFilter();
-      for (LindenBooleanSubFilter booleanSubFilter : booleanSubFilterList) {
-        LindenFilter subFilter = booleanSubFilter.getFilter();
-        switch (booleanSubFilter.clause) {
-          case MUST:
-            booleanFilter.add(FilterConstructor.constructFilter(subFilter, config), BooleanClause.Occur.MUST);
-            continue;
-          case SHOULD:
-            booleanFilter.add(FilterConstructor.constructFilter(subFilter, config), BooleanClause.Occur.SHOULD);
-            continue;
-          case MUST_NOT:
-            booleanFilter.add(FilterConstructor.constructFilter(subFilter, config), BooleanClause.Occur.MUST_NOT);
-        }
+    List<LindenBooleanSubFilter> booleanSubFilterList = lindenFilter.getBooleanFilter().getFilters();
+    BooleanFilter booleanFilter = new BooleanFilter();
+    for (LindenBooleanSubFilter booleanSubFilter : booleanSubFilterList) {
+      LindenFilter subFilter = booleanSubFilter.getFilter();
+      switch (booleanSubFilter.clause) {
+        case MUST:
+          booleanFilter.add(FilterConstructor.constructFilter(subFilter, config), BooleanClause.Occur.MUST);
+          continue;
+        case SHOULD:
+          booleanFilter.add(FilterConstructor.constructFilter(subFilter, config), BooleanClause.Occur.SHOULD);
+          continue;
+        case MUST_NOT:
+          booleanFilter.add(FilterConstructor.constructFilter(subFilter, config), BooleanClause.Occur.MUST_NOT);
       }
-      return booleanFilter;
     }
-    return null;
+    return booleanFilter;
   }
 }

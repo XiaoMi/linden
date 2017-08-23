@@ -179,12 +179,18 @@ struct LindenSpatialFilter {
     1: required SpatialParam spatialParam
 }
 
+struct LindenNotNullFieldFilter {
+    1: required string field,
+    2: required bool reverse,
+}
+
 struct LindenFilter {
     1: optional LindenQueryFilter queryFilter,
     2: optional LindenBooleanFilter booleanFilter,
     3: optional LindenTermFilter termFilter,
     4: optional LindenRangeFilter rangeFilter,
     5: optional LindenSpatialFilter spatialFilter,
+    6: optional LindenNotNullFieldFilter notNullFieldFilter,
 }
 
 ######################################################################
