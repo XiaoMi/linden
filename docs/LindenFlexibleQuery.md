@@ -46,7 +46,7 @@ addFieldExpl(int i, float score, String expl) | Add explanation of the i-th fiel
 
 To understand Flexible Query easily, let’s see the example in ***com.xiaomi.linden.lucene.query.flexiblequery.TestFlexibleQuery***
 
-####Index
+#### Index
 4 Documents in the index:
 
  <sub>Doc Id</sub> &nbsp;&nbsp;&nbsp;&nbsp; <sup>Field Name</sup>| Text Field | Title Field 
@@ -56,7 +56,7 @@ Doc 1 | hello lucene hello world | hello world
 Doc 2 | world hello | lucene
 Doc 3 | hello world lucene hello |world
 
-####Simplest Flexible Query
+#### Simplest Flexible Query
 	SELECT * FROM LINDEN BY flexible_query is "hello world" in (text) USING MODEL simplest BEGIN
 	   float sum = 0f;
 	    for (int i = 0; i < getFieldLength(); ++i) {
@@ -90,7 +90,7 @@ Doc3, score: 0.6630884408950806 |
 
 Doc0 score is same with Doc2; Doc1 score is same with Doc3 score, since lucene string query doesn’t take position into consideration.
 
-####Field Boost Flexible Query
+#### Field Boost Flexible Query
 	SELECT * FROM LINDEN BY flexible_query is "hello world" in (text^2) USING MODEL fieldBoost1 BEGIN
 	   float sum = 0f;
 	    for (int i = 0; i < getFieldLength(); ++i) {
@@ -137,7 +137,7 @@ If we don’t boost title field, the relevance order is Doc0, Doc1, Doc2 and Doc
 
 Doc2 has higher rank than Doc1 under the title boost query, because Doc2 title has a term “lucene” while Doc1 doesn’t.
 
-####Term Boost Flexible Query
+#### Term Boost Flexible Query
 
 	SELECT * FROM LINDEN BY flexible_query is "hello world^3" in (text) USING MODEL termBoost BEGIN
 	   float sum = 0f;
@@ -161,7 +161,7 @@ This flexible query has exactly same effect with lucene string query  “text:(h
 	SELECT * FROM LINDEN BY query is 'text:(hello world^3)'
 
 
-####Continuous Match Boost Flexible Query
+#### Continuous Match Boost Flexible Query
 Lucene string query can’t boost score with position information, while flexible query can.  Here is a continuous match boost example.
 
 	SELECT * FROM LINDEN BY flexible_query is "hello world lucene" in (text) USING MODEL continuousMatchBoost BEGIN
@@ -241,7 +241,7 @@ In Doc2, there is no continuous match
 So Doc3 score is 2*0.5 higher than the score of simple lucene string query; while Doc1 score and Doc0 score has 0.5 higher than the scores of simple lucene string query.
 
 
-####Match Ratio Controlled Flexible Query
+#### Match Ratio Controlled Flexible Query
 
 Sometimes you may want to control how many query terms to be matched. Flexible query can easily handle this.
 
@@ -276,7 +276,7 @@ This query requires match ratio is greater than 0.5. There are 3 query terms, so
 
 Doc 0 with title field “hello lucene” and Doc 1 with title field “hello world” are matched. And of course “match 1” is same with “full_match”.
 
-####Flexible Query Explanation
+#### Flexible Query Explanation
 Flexible Query provides a default explanation, and it allows users to customize explanation, so that we can easily debug our score model. Remember explanation should only be enabled in debug mode, it may drop performance.
 
 	SELECT * FROM LINDEN BY flexible_query is "hello world lucene" in (text) USING MODEL continuousMatchBoostExplained BEGIN
@@ -343,5 +343,5 @@ The explanations result:
 	*** hello is matched in text field, positions are [1]
 	*** world is matched in text field, positions are [0]
 
-####Conclusion
+#### Conclusion
 Flexible Query makes user customize scoring logic flexibly.  It provides field boost, term boost, and positions information APIs in score model.  And of course,  Flexible Query score model inherits all features of normal linden score model such as field value access and score model plugin support. See more in [BQL Document](BQL.md#score-model).

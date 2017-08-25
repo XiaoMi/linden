@@ -1,4 +1,4 @@
-###Get started
+### Get started
 *   git clone https://github.com/XiaoMi/linden.git
 *   cd to root directory of linden source code
 *  `$ mvn clean package -DskipTests`
@@ -6,7 +6,7 @@
 *  `$ sh ./bin/start-linden-server.sh demo/cars/conf/`  or  run `> .\bin\start-linden-server.cmd  demo/cars/conf/` in windows OS
 *   Play the demo at [http://localhost:10000](http://localhost:10000)
 
-###Demo config
+### Demo config
 [http://localhost:10000/#/config/](http://localhost:10000/#/config/) displays this demo configuration
 
 *	Runtime Status
@@ -40,7 +40,7 @@ This demo index is from demo/cars/data/cars.json.  There is 15000 cars data in J
 *	mileage and price are long type fields which store a long type value
 *	color, year, makemodel and city are facet type fields which can be used in facet search.   See [http://lucene.apache.org/core/4_0_0/facet/org/apache/lucene/facet/doc-files/userguide.html](http://lucene.apache.org/core/4_0_0/facet/org/apache/lucene/facet/doc-files/userguide.html)
 
-###Play the Demo
+### Play the Demo
 Play the demo in [http://localhost:10000/#/search/](http://localhost:10000/#/search/)
 Here are some sample BQL queries you can try:
 

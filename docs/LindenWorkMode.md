@@ -18,7 +18,7 @@ There is an operation type field in JSON format data, whose value may be index, 
 **swap\_index** is only valid in hot-swap mode.
 delete\_index is only valid in multi-core mode. 
 
-###Simple Mode
+### Simple Mode
 This is linden default mode.
 Index example:
 
@@ -41,7 +41,7 @@ Delete example:
 	
 This is a delete request example, which will delete “3” document.
  
-###Hot Swap Mode
+### Hot Swap Mode
 If you want to replace the old index with a completely new index and keep linden working for online requests, you can enable linden hot-swap mode in linden.properties.
 
 	linden.core.mode=HOTSWAP
@@ -77,7 +77,7 @@ Swap_index example:
 	    "type":"swap_index"
 	}
  
-###Multiple Core Mode
+### Multiple Core Mode
 Sometimes you may want split one shard index to several sub-indexes based on some strategies. You can use linden multiple core mode.
 Linden has 3 splitting strategies:
 
