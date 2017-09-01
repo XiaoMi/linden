@@ -156,8 +156,9 @@ public abstract class LindenScoreModelStrategy {
   public abstract double computeScore() throws IOException;
 
   public void writeExplanation(String format, Object... args) {
-    if (isExplain)
+    if (isExplain) {
       explanation = String.format(format, args);
+    }
   }
 
   public String getExplanation() {

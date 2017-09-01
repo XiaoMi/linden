@@ -250,6 +250,8 @@ public class TestLindenCore extends TestLindenCoreBase {
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(4, result.getTotalHits());
     Assert.assertEquals(1040f, result.getHits().get(0).getScore(), 0.1f);
+    Assert.assertTrue(result.getHits().get(0).getExplanation().toString()
+                          .contains("value:1040.0, description:rank:10.30, a:10"));
   }
 
   @Test

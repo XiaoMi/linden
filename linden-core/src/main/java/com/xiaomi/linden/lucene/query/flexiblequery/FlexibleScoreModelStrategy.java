@@ -14,17 +14,19 @@
 
 package com.xiaomi.linden.lucene.query.flexiblequery;
 
-import com.xiaomi.linden.core.search.query.model.LindenScoreModelStrategy;
-import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.similarities.Similarity;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.lucene.search.Explanation;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.similarities.Similarity;
+
+import com.xiaomi.linden.core.search.query.model.LindenScoreModelStrategy;
+
 // not thread safe.
 abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrategy {
+
   private MatchedInfoMatrix matchedMatrix;
   protected Similarity similarity;
   private String explanation;
@@ -47,13 +49,21 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   @Override
-  public int doc() { return matchedMatrix.doc(); }
+  public int doc() {
+    return matchedMatrix.doc();
+  }
 
-  public int getFieldLength() { return matchedMatrix.getFieldLength(); }
+  public int getFieldLength() {
+    return matchedMatrix.getFieldLength();
+  }
 
-  public float getFieldBoost(int field) { return matchedMatrix.getFieldBoost(field); }
+  public float getFieldBoost(int field) {
+    return matchedMatrix.getFieldBoost(field);
+  }
 
-  public int getTermLength() { return matchedMatrix.getTermLength(); }
+  public int getTermLength() {
+    return matchedMatrix.getTermLength();
+  }
 
   public boolean isMatched(int field, int term) {
     return termMatchedInfo(field, term).isMatched();
@@ -86,7 +96,9 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
     return 1;
   }
 
-  public int freq(int field, int term) { return termMatchedInfo(field, term).freq(); }
+  public int freq(int field, int term) {
+    return termMatchedInfo(field, term).freq();
+  }
 
   public int position(int field, int term) {
     return termMatchedInfo(field, term).position();
@@ -126,7 +138,8 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
             result.setValue(termScores[i][j] != null ? termScores[i][j] : getScore(i, j));
           } else {
             result.setDescription(String.format("%.2f * %.2f * %.2f -- (%s %d)",
-                getRawScore(i, j), getFieldBoost(i), getTermBoost(j), text(i, j), position(i, j)));
+                                                getRawScore(i, j), getFieldBoost(i), getTermBoost(j), text(i, j),
+                                                position(i, j)));
             result.setValue(getScore(i, j));
           }
           subExpl.addDetail(result);
@@ -147,8 +160,9 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public void writeExplanation(String format, Object... args) {
-    if (isExplain)
+    if (isExplain) {
       explanation = String.format(format, args);
+    }
   }
 
   public String getExpl(String format, Object... args) {
@@ -156,8 +170,9 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public void addTermExpl(int i, int j, String expl) {
-    if (isExplain)
+    if (isExplain) {
       termExpls[i][j] = expl;
+    }
   }
 
   public void addTermExpl(int i, int j, float score, String expl) {
@@ -166,8 +181,9 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public void addFieldExpl(int i, String expl) {
-    if (isExplain)
+    if (isExplain) {
       fieldExpls[i] = expl;
+    }
   }
 
   public void addFieldExpl(int i, float score, String expl) {
@@ -176,17 +192,20 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public void addTermScore(int i, int j, float score) {
-    if (isExplain)
+    if (isExplain) {
       termScores[i][j] = score;
+    }
   }
 
   public void addFieldScore(int i, float score) {
-    if (isExplain)
+    if (isExplain) {
       fieldScores[i] = score;
+    }
   }
 
   public void setRootExpl(String expl) {
-    if (isExplain)
+    if (isExplain) {
       explanation = expl;
+    }
   }
 }

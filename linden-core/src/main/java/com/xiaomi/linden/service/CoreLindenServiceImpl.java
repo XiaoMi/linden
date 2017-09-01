@@ -256,7 +256,8 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           if (eps > 10) {
             LOGGER.warn("Warning: instanceExecutorPool took " + eps + "ms to start delete.");
             if (eps > instanceFuturePoolWaitTimeout) {
-              response = ResponseUtils.buildFailedResponse("Waiting time is too long, " + eps + "ms in instance future pool");
+              response =
+                  ResponseUtils.buildFailedResponse("Waiting time is too long, " + eps + "ms in instance future pool");
               return response;
             }
           }
@@ -290,16 +291,14 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           if (eps > 10) {
             LOGGER.warn("Warning: instanceExecutorPool took " + eps + "ms to start index.");
             if (eps > instanceFuturePoolWaitTimeout) {
-              response = ResponseUtils.buildFailedResponse("Waiting time is too long, " + eps + "ms in instance future pool");
+              response =
+                  ResponseUtils.buildFailedResponse("Waiting time is too long, " + eps + "ms in instance future pool");
               return response;
             }
           }
           LindenIndexRequest indexRequest =
               LindenIndexRequestParser.parse(config.getSchema(), content);
-          if (shardingStrategy.accept(indexRequest.getId(), indexRequest.getRouteParam())) {
-            response = lindenCore.index(indexRequest);
-          }
-          response = ResponseUtils.buildFailedResponse("Not accepted by sharding strategy.");
+          response = lindenCore.index(indexRequest);
         } catch (Exception e) {
           String errorStackInfo = Throwables.getStackTraceAsString(e);
           response = ResponseUtils.buildFailedResponse(errorStackInfo);
@@ -475,7 +474,8 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           if (eps > 10) {
             LOGGER.warn("Warning: clusterExecutorPool took " + eps + "ms to start handleClusterDeleteRequest.");
             if (eps > clusterFuturePoolWaitTimeout) {
-              response = ResponseUtils.buildFailedResponse("Waiting time is too long, " + eps + "ms in cluster future pool");
+              response =
+                  ResponseUtils.buildFailedResponse("Waiting time is too long, " + eps + "ms in cluster future pool");
               return response;
             }
           }

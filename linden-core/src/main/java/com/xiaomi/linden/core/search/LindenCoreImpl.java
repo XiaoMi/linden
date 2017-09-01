@@ -17,14 +17,9 @@ package com.xiaomi.linden.core.search;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -78,7 +73,6 @@ import com.xiaomi.linden.thrift.common.LindenDocument;
 import com.xiaomi.linden.thrift.common.LindenFacet;
 import com.xiaomi.linden.thrift.common.LindenFacetDimAndPath;
 import com.xiaomi.linden.thrift.common.LindenField;
-import com.xiaomi.linden.thrift.common.LindenFieldSchema;
 import com.xiaomi.linden.thrift.common.LindenIndexRequest;
 import com.xiaomi.linden.thrift.common.LindenResult;
 import com.xiaomi.linden.thrift.common.LindenSearchRequest;
@@ -152,7 +146,7 @@ public class LindenCoreImpl extends LindenCore {
     }
   }
 
-  public LindenResult search(LindenSearchRequest request) throws IOException  {
+  public LindenResult search(LindenSearchRequest request) throws IOException {
     SearcherTaxonomyManager.SearcherAndTaxonomy searcherAndTaxonomy = lindenNRTSearcherManager.acquire();
     try {
       IndexSearcher indexSearcher = searcherAndTaxonomy.searcher;
@@ -264,7 +258,8 @@ public class LindenCoreImpl extends LindenCore {
           facets = new FastTaxonomyFacetCounts(searcherAndTaxonomy.taxonomyReader, facetsConfig, facetsCollector);
         }
       }
-      return resultParser.parse(lindenDocsCollector.topDocs(), null, facets, facetsCollector, earlyTerminationCollector);
+      return resultParser
+          .parse(lindenDocsCollector.topDocs(), null, facets, facetsCollector, earlyTerminationCollector);
     } catch (Exception e) {
       throw new IOException(Throwables.getStackTraceAsString(e));
     } finally {
