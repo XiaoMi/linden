@@ -31,6 +31,7 @@ import com.xiaomi.linden.service.LindenServer;
 import com.xiaomi.linden.thrift.common.LindenResult;
 
 public class TestLindenServerWithFacet {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(TestLindenServerWithFacet.class);
   private static LindenServer server1;
   private static LindenServer server2;
@@ -105,14 +106,14 @@ public class TestLindenServerWithFacet {
       generateIndexRequest("8", "cn", "Lisa", "2010/11/20", 110),
       generateIndexRequest("9", "en", "Lisa", "2012/2/1", 20),
       generateIndexRequest("10", "en", "Susan", "2013/1/7", 9),
-      generateIndexRequest("11", "en","Sue", "1999/5/15", 78),
+      generateIndexRequest("11", "en", "Sue", "1999/5/15", 78),
       generateIndexRequest("12", "en", "Bob", "2010/12/25", 123),
       generateIndexRequest("13", "cn", "Bob", "2010/11/25", 9),
       generateIndexRequest("14", "cn", "Susan", "2011/10/25", 14),
       generateIndexRequest("15", "en", null, "1999/2/1", 23),
-      generateIndexRequest("16", "en","Susan", null, 26),
+      generateIndexRequest("16", "en", "Susan", null, 26),
       generateIndexRequest("17", "cn", null, null, 46),
-  };
+      };
 
   public static void index() throws Exception {
     for (int i = 0; i < indexRequest.length; ++i) {
@@ -144,44 +145,44 @@ public class TestLindenServerWithFacet {
   @Test
   public void basicTest() throws Exception {
     String bql = "select * from linden browse by PublishDate, Author, Author(2), PublishDate(10, '2010'), "
-        + "PublishDate(10, '2010/10'), PublishDate(10, '2010/10/15'), PublishDate(10, '2010/13')";
+                 + "PublishDate(10, '2010/10'), PublishDate(10, '2010/10/15'), PublishDate(10, '2010/13')";
     LindenResult result = clusterClient.search(bql);
     Assert.assertEquals(17, result.getTotalHits());
     Assert.assertEquals(7, result.getFacetResultsSize());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, value:15, childCount:5, " +
-        "labelValues:[LindenLabelAndValue(label:2010, value:6), " +
-        "LindenLabelAndValue(label:2012, value:4), " +
-        "LindenLabelAndValue(label:1999, value:3), " +
-        "LindenLabelAndValue(label:2011, value:1), " +
-        "LindenLabelAndValue(label:2013, value:1)])", result.getFacetResults().get(0).toString());
+                        "labelValues:[LindenLabelAndValue(label:2010, value:6), " +
+                        "LindenLabelAndValue(label:2012, value:4), " +
+                        "LindenLabelAndValue(label:1999, value:3), " +
+                        "LindenLabelAndValue(label:2011, value:1), " +
+                        "LindenLabelAndValue(label:2013, value:1)])", result.getFacetResults().get(0).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:Author, value:15, childCount:5, " +
-        "labelValues:[LindenLabelAndValue(label:Susan, value:5), " +
-        "LindenLabelAndValue(label:Bob, value:4), " +
-        "LindenLabelAndValue(label:Lisa, value:4), " +
-        "LindenLabelAndValue(label:Frank, value:1), " +
-        "LindenLabelAndValue(label:Sue, value:1)])", result.getFacetResults().get(1).toString());
+                        "labelValues:[LindenLabelAndValue(label:Susan, value:5), " +
+                        "LindenLabelAndValue(label:Bob, value:4), " +
+                        "LindenLabelAndValue(label:Lisa, value:4), " +
+                        "LindenLabelAndValue(label:Frank, value:1), " +
+                        "LindenLabelAndValue(label:Sue, value:1)])", result.getFacetResults().get(1).toString());
 
-    Assert.assertEquals(
-        "LindenFacetResult(dim:Author, value:15, childCount:4, labelValues:[LindenLabelAndValue(label:Lisa, value:4), LindenLabelAndValue(label:Susan, value:4)])",
+    Assert.assertEquals("LindenFacetResult(dim:Author, value:15, childCount:4, "
+        + "labelValues:[LindenLabelAndValue(label:Lisa, value:4), LindenLabelAndValue(label:Susan, value:4)])",
         result.getFacetResults().get(2).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010, value:6, childCount:3, " +
-        "labelValues:[LindenLabelAndValue(label:10, value:3), " +
-        "LindenLabelAndValue(label:11, value:2), " +
-        "LindenLabelAndValue(label:12, value:1)])", result.getFacetResults().get(3).toString());
+                        "labelValues:[LindenLabelAndValue(label:10, value:3), " +
+                        "LindenLabelAndValue(label:11, value:2), " +
+                        "LindenLabelAndValue(label:12, value:1)])", result.getFacetResults().get(3).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010/10, value:3, childCount:3, " +
-        "labelValues:[LindenLabelAndValue(label:15, value:1), " +
-        "LindenLabelAndValue(label:20, value:1), " +
-        "LindenLabelAndValue(label:25, value:1)])", result.getFacetResults().get(4).toString());
+                        "labelValues:[LindenLabelAndValue(label:15, value:1), " +
+                        "LindenLabelAndValue(label:20, value:1), " +
+                        "LindenLabelAndValue(label:25, value:1)])", result.getFacetResults().get(4).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010/10/15, value:0, childCount:0)",
-        result.getFacetResults().get(5).toString());
+                        result.getFacetResults().get(5).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010/13, value:0, childCount:0)",
-        result.getFacetResults().get(6).toString());
+                        result.getFacetResults().get(6).toString());
 
     bql = "select * from Linden query Language='en' browse by Author";
     result = clusterClient.search(bql);
@@ -189,51 +190,54 @@ public class TestLindenServerWithFacet {
     Assert.assertEquals(1, result.getFacetResultsSize());
 
     Assert.assertEquals("LindenFacetResult(dim:Author, value:9, childCount:5, " +
-        "labelValues:[LindenLabelAndValue(label:Susan, value:4), " +
-        "LindenLabelAndValue(label:Lisa, value:2), " +
-        "LindenLabelAndValue(label:Bob, value:1), " +
-        "LindenLabelAndValue(label:Frank, value:1), " +
-        "LindenLabelAndValue(label:Sue, value:1)])", result.getFacetResults().get(0).toString());
+                        "labelValues:[LindenLabelAndValue(label:Susan, value:4), " +
+                        "LindenLabelAndValue(label:Lisa, value:2), " +
+                        "LindenLabelAndValue(label:Bob, value:1), " +
+                        "LindenLabelAndValue(label:Frank, value:1), " +
+                        "LindenLabelAndValue(label:Sue, value:1)])", result.getFacetResults().get(0).toString());
   }
 
   @Test
   public void earlyTermination() throws Exception {
     String bql = "select * from linden browse by PublishDate, Author, Author(2), PublishDate(10, '2010'), "
-        + "PublishDate(10, '2010/10'), PublishDate(10, '2010/10/15'), PublishDate(10, '2010/13') in top 5";
+                 + "PublishDate(10, '2010/10'), PublishDate(10, '2010/10/15'), PublishDate(10, '2010/13') in top 5";
     LindenResult result = clusterClient.search(bql);
-    Assert.assertEquals(17, result.getTotalHits());
+
+    Assert.assertEquals(10, result.getTotalHits());
     Assert.assertEquals(7, result.getFacetResultsSize());
 
-    Assert.assertEquals("LindenFacetResult(dim:PublishDate, value:13, childCount:3, " +
-        "labelValues:[LindenLabelAndValue(label:2012, value:6), " +
-        "LindenLabelAndValue(label:2010, value:5), " +
-        "LindenLabelAndValue(label:1999, value:2)])", result.getFacetResults().get(0).toString());
+    Assert.assertEquals(
+        "LindenFacetResult(dim:PublishDate, value:10, childCount:3, "
+        + "labelValues:[LindenLabelAndValue(label:2010, value:4), LindenLabelAndValue(label:2012, value:4), "
+        + "LindenLabelAndValue(label:1999, value:2)])",
+        result.getFacetResults().get(0).toString());
 
-    Assert.assertEquals("LindenFacetResult(dim:Author, value:12, childCount:5, " +
-        "labelValues:[LindenLabelAndValue(label:Lisa, value:6), " +
-        "LindenLabelAndValue(label:Bob, value:2), " +
-        "LindenLabelAndValue(label:Susan, value:2), " +
-        "LindenLabelAndValue(label:Frank, value:1), " +
-        "LindenLabelAndValue(label:Sue, value:1)])", result.getFacetResults().get(1).toString());
+    Assert.assertEquals("LindenFacetResult(dim:Author, value:10, childCount:5, "
+                        + "labelValues:[LindenLabelAndValue(label:Lisa, value:4), "
+                        + "LindenLabelAndValue(label:Bob, value:2), "
+                        + "LindenLabelAndValue(label:Susan, value:2), "
+                        + "LindenLabelAndValue(label:Frank, value:1), "
+                        + "LindenLabelAndValue(label:Sue, value:1)])",
+                        result.getFacetResults().get(1).toString());
 
-    Assert.assertEquals("LindenFacetResult(dim:Author, value:17, childCount:4, " +
-        "labelValues:[LindenLabelAndValue(label:Lisa, value:6), " +
-        "LindenLabelAndValue(label:Bob, value:1)])", result.getFacetResults().get(2).toString());
+    Assert.assertEquals("LindenFacetResult(dim:Author, value:10, childCount:4, "
+                        + "labelValues:[LindenLabelAndValue(label:Lisa, value:4), "
+                        + "LindenLabelAndValue(label:Bob, value:1)])", result.getFacetResults().get(2).toString());
 
-    Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010, value:5, childCount:2, " +
-        "labelValues:[LindenLabelAndValue(label:10, value:4), " +
-        "LindenLabelAndValue(label:11, value:1)])", result.getFacetResults().get(3).toString());
+    Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010, value:4, childCount:2, "
+                        + "labelValues:[LindenLabelAndValue(label:10, value:3), "
+                        + "LindenLabelAndValue(label:11, value:1)])", result.getFacetResults().get(3).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010/10, value:3, childCount:3, " +
-        "labelValues:[LindenLabelAndValue(label:15, value:1), " +
-        "LindenLabelAndValue(label:20, value:1), " +
-        "LindenLabelAndValue(label:25, value:1)])", result.getFacetResults().get(4).toString());
+                        "labelValues:[LindenLabelAndValue(label:15, value:1), " +
+                        "LindenLabelAndValue(label:20, value:1), " +
+                        "LindenLabelAndValue(label:25, value:1)])", result.getFacetResults().get(4).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010/10/15, value:0, childCount:0)",
-        result.getFacetResults().get(5).toString());
+                        result.getFacetResults().get(5).toString());
 
     Assert.assertEquals("LindenFacetResult(dim:PublishDate, path:2010/13, value:0, childCount:0)",
-        result.getFacetResults().get(6).toString());
+                        result.getFacetResults().get(6).toString());
   }
 
 
@@ -242,8 +246,8 @@ public class TestLindenServerWithFacet {
     String bql = "select * from linden aggregate by Price({*, 10}, [10, 20}, [20, 30}, [50, 100}, [100, *})";
     LindenResult result = clusterClient.search(bql);
     Assert.assertEquals("[AggregationResult(field:Price, labelValues:[LindenLabelAndValue(label:{*,10}, value:2), "
-            + "LindenLabelAndValue(label:[10,20}, value:4), LindenLabelAndValue(label:[20,30}, value:5), "
-            + "LindenLabelAndValue(label:[50,100}, value:1), LindenLabelAndValue(label:[100,*}, value:2)])]",
-        result.getAggregationResults().toString());
+                        + "LindenLabelAndValue(label:[10,20}, value:4), LindenLabelAndValue(label:[20,30}, value:5), "
+                        + "LindenLabelAndValue(label:[50,100}, value:1), LindenLabelAndValue(label:[100,*}, value:2)])]",
+                        result.getAggregationResults().toString());
   }
 }

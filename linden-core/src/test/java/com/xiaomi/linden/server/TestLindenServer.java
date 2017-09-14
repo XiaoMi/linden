@@ -206,10 +206,10 @@ public class TestLindenServer {
     assertHits("select * from linden by query is 'sName:(fashion hotel)' OP(AND) source", 4, 4, null);
     assertHits("select * from linden by query is 'sName:(fashion hotel)' OP(AND) source in top 10", 4, 4, null);
     assertHits("select * from linden by query is 'sName:hotel' source", 10, 53, null);
-    assertHits("select * from linden by query is 'sName:hotel' source in top 20", 10, 51, "16435");
+    assertHits("select * from linden by query is 'sName:hotel' source in top 20", 10, 40, "16435");
 
     // early termination with sort
-    assertHits("select * from linden by query is 'sName:hotel' source in top 20 order by catId,id", 10, 51, "4013");
+    assertHits("select * from linden by query is 'sName:hotel' source in top 20 order by catId,id", 10, 40, "4013");
   }
 
   @Test
@@ -221,9 +221,9 @@ public class TestLindenServer {
     Assert.assertEquals(53, n0 + n1);
 
     // early termination.
-    assertHits("select * from linden by query is 'sName:hotel' route by 0 in top 10, 1", 10, 52, null);
-    assertHits("select * from linden by query is 'sName:hotel' route by 0, 1 in top 10", 10, 49, null);
-    assertHits("select * from linden by query is 'sName:hotel' in top 10", 10, 48, null);
+    assertHits("select * from linden by query is 'sName:hotel' route by 0 in top 10, 1", 10, 36, null);
+    assertHits("select * from linden by query is 'sName:hotel' route by 0, 1 in top 10", 10, 37, null);
+    assertHits("select * from linden by query is 'sName:hotel' in top 10", 10, 20, null);
   }
 
   @Test

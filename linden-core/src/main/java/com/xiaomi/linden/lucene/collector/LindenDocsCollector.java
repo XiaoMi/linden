@@ -39,7 +39,7 @@ public class LindenDocsCollector extends Collector {
   }
 
   public void wrap(Collector collector) {
-    wrappedCollector = MultiCollector.wrap(wrappedCollector, collector);
+    wrappedCollector = MultiCollector.wrap(collector, wrappedCollector);
   }
 
   public TopDocs topDocs() {

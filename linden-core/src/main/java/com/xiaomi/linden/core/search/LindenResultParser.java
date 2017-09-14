@@ -211,8 +211,7 @@ public class LindenResultParser {
 
 
   public LindenResult parse(TopDocs topDocs, TopGroups<TopDocs> topGroupedDocs,
-                            Facets facets, FacetsCollector facetsCollector,
-                            EarlyTerminationCollector earlyTerminationCollector) throws IOException {
+                            Facets facets, FacetsCollector facetsCollector) throws IOException {
     LindenResult result = new LindenResult();
     List<LindenHit> lindenHits;
     int totalHits = 0;
@@ -241,7 +240,7 @@ public class LindenResultParser {
     }
     result.setTotalHits(totalHits);
     result.setHits(lindenHits);
-    parseFacets(result, facets, facetsCollector, earlyTerminationCollector);
+    parseFacets(result, facets, facetsCollector);
     result.setQueryInfo(new QueryInfo().setQuery(query.toString()));
     if (filter != null) {
       result.getQueryInfo().setFilter(filter.toString());
@@ -252,10 +251,7 @@ public class LindenResultParser {
     return result;
   }
 
-  private void parseFacets(LindenResult result, Facets facets, FacetsCollector facetsCollector,
-                           EarlyTerminationCollector earlyTerminationCollector) throws IOException {
-    double earlyTerminationFactor = earlyTerminationCollector == null ?
-                                    1.0 : earlyTerminationCollector.getEarlyTerminationFactor();
+  private void parseFacets(LindenResult result, Facets facets, FacetsCollector facetsCollector) throws IOException {
     // Set facets
     if (request.isSetFacet()) {
       if (request.getFacet().isSetFacetParams() && facets != null) {
@@ -273,14 +269,13 @@ public class LindenResultParser {
           }
           if (facetResult != null) {
             lindenFacetResult
-                .setValue((int) (facetResult.value.intValue() * earlyTerminationFactor));
+                .setValue(facetResult.value.intValue());
             lindenFacetResult.setChildCount(facetResult.childCount);
             int sumValue = 0;
             for (int j = 0; j < facetResult.labelValues.length; ++j) {
               LindenLabelAndValue labelAndValue = new LindenLabelAndValue();
               labelAndValue.setLabel(facetResult.labelValues[j].label);
-              int value = (int) (facetResult.labelValues[j].value.intValue()
-                                 * earlyTerminationFactor);
+              int value = facetResult.labelValues[j].value.intValue();
               labelAndValue.setValue(value);
               sumValue += value;
               lindenFacetResult.addToLabelValues(labelAndValue);
@@ -335,8 +330,7 @@ public class LindenResultParser {
           for (int j = 0; j < facetResult.labelValues.length; ++j) {
             LindenLabelAndValue labelAndValue = new LindenLabelAndValue();
             labelAndValue.setLabel(facetResult.labelValues[j].label);
-            int value = (int) (facetResult.labelValues[j].value.intValue() * earlyTerminationFactor);
-            labelAndValue.setValue(value);
+            labelAndValue.setValue(facetResult.labelValues[j].value.intValue());
             aggregationResult.addToLabelValues(labelAndValue);
           }
           result.addToAggregationResults(aggregationResult);

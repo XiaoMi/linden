@@ -172,7 +172,7 @@ public class LindenCoreImpl extends LindenCore {
         } else {
           docs = indexSearcher.search(query, from + size);
         }
-        return resultParser.parse(docs, null, null, null, null);
+        return resultParser.parse(docs, null, null, null);
       }
 
       // group param will suppress facet, group, early termination and search time limit parameters
@@ -188,7 +188,7 @@ public class LindenCoreImpl extends LindenCore {
         groupingSearch.setCachingInMB(8.0, true);
         groupingSearch.setAllGroups(true);
         TopGroups<TopDocs> topGroupedDocs = groupingSearch.search(indexSearcher, query, 0, from + size);
-        return resultParser.parse(null, topGroupedDocs, null, null, null);
+        return resultParser.parse(null, topGroupedDocs, null, null);
       }
 
       TopDocsCollector topDocsCollector;
@@ -218,7 +218,7 @@ public class LindenCoreImpl extends LindenCore {
       // no facet param
       if (!request.isSetFacet()) {
         indexSearcher.search(query, collector);
-        return resultParser.parse(lindenDocsCollector.topDocs(), null, null, null, earlyTerminationCollector);
+        return resultParser.parse(lindenDocsCollector.topDocs(), null, null, null);
       }
 
       // facet search
@@ -258,8 +258,7 @@ public class LindenCoreImpl extends LindenCore {
           facets = new FastTaxonomyFacetCounts(searcherAndTaxonomy.taxonomyReader, facetsConfig, facetsCollector);
         }
       }
-      return resultParser
-          .parse(lindenDocsCollector.topDocs(), null, facets, facetsCollector, earlyTerminationCollector);
+      return resultParser.parse(lindenDocsCollector.topDocs(), null, facets, facetsCollector);
     } catch (Exception e) {
       throw new IOException(Throwables.getStackTraceAsString(e));
     } finally {

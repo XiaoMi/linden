@@ -14,27 +14,29 @@
 
 package com.xiaomi.linden.lucene.collector;
 
-import org.apache.lucene.index.AtomicReaderContext;
-import org.apache.lucene.search.*;
-
 import java.io.IOException;
+
+import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.search.CollectionTerminatedException;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopDocsCollector;
 
 public class EarlyTerminationCollector extends Collector {
 
-  private final int maxDocsToCollect;
-  private int collectedNum = 0;
+  // docs to collect per segment reader
+  private final int numDocsToCollectPerSegment;
+  private int numCollected = 0;
   private final TopDocsCollector collector;
-  private int minMatchedDoc = -1;
-  private int maxMatchedDoc = -1;
-  private int totalDocs = 0;
-  private int docBase = 0;
 
-  public EarlyTerminationCollector(TopDocsCollector collector, int maxDocsToCollect) {
-    this.collector = collector;
-    this.maxDocsToCollect = maxDocsToCollect;
-    if (maxDocsToCollect < 1) {
-      throw new RuntimeException("maxDocsToCollect < 1");
+  public EarlyTerminationCollector(TopDocsCollector collector, int numDocsToCollectPerSegment) {
+    if (numDocsToCollectPerSegment <= 0) {
+      throw new IllegalStateException(
+          "numDocsToCollectPerSegment must always be > 0, got " + numDocsToCollectPerSegment);
     }
+    this.collector = collector;
+    this.numDocsToCollectPerSegment = numDocsToCollectPerSegment;
   }
 
   @Override
@@ -45,20 +47,15 @@ public class EarlyTerminationCollector extends Collector {
   @Override
   public void setNextReader(AtomicReaderContext context) throws IOException {
     collector.setNextReader(context);
-    totalDocs += context.reader().maxDoc();
-    docBase = context.docBase;
+    numCollected = 0;
   }
 
   @Override
   public void collect(int doc) throws IOException {
-    if (collectedNum >= maxDocsToCollect) {
+    collector.collect(doc);
+    if (++numCollected >= numDocsToCollectPerSegment) {
       throw new CollectionTerminatedException();
     }
-    collector.collect(doc);
-    ++collectedNum;
-    if (minMatchedDoc == -1)
-      minMatchedDoc = docBase + doc;
-    maxMatchedDoc = docBase + doc;
   }
 
   @Override
@@ -67,20 +64,6 @@ public class EarlyTerminationCollector extends Collector {
   }
 
   public TopDocs topDocs() {
-    TopDocs topDocs = collector.topDocs();
-    if (collectedNum < maxDocsToCollect) {
-      topDocs.totalHits = collectedNum;
-      return topDocs;
-    }
-    double ratio = 1.0 * collectedNum / (maxMatchedDoc - minMatchedDoc + 1);
-    topDocs.totalHits = (int) (totalDocs * ratio);
-    return topDocs;
-  }
-
-  public double getEarlyTerminationFactor() {
-    if (collectedNum < maxDocsToCollect  || minMatchedDoc == maxMatchedDoc) {
-      return 1.0;
-    }
-    return (double)totalDocs / (maxMatchedDoc - minMatchedDoc + 1);
+    return collector.topDocs();
   }
 }
