@@ -64,8 +64,23 @@ public class TestLindenSortingMergePolicy {
       handleRequest("{\"id\":3, \"title\": \"lucene 3\",\"rank\": 1.3}");
       handleRequest("{\"id\":4, \"title\": \"lucene 4\",\"rank\": 1.5}");
       handleRequest("{\"id\":5, \"title\": \"lucene 5\",\"rank\": 1.0}");
-      lindenCore.merge(1);
       lindenCore.commit();
+
+      handleRequest("{\"id\":6, \"title\": \"lucene 6\",\"rank\": 2.6}");
+      handleRequest("{\"id\":7, \"title\": \"lucene 7\",\"rank\": 4.7}");
+      handleRequest("{\"id\":8, \"title\": \"lucene 8\",\"rank\": 1.9}");
+      handleRequest("{\"id\":9, \"title\": \"lucene 9\",\"rank\": 2.1}");
+      handleRequest("{\"id\":10, \"title\": \"lucene 10\",\"rank\": 2.7}");
+      lindenCore.commit();
+
+      handleRequest("{\"id\":11, \"title\": \"lucene 11\",\"rank\": 1.6}");
+      handleRequest("{\"id\":12, \"title\": \"lucene 12\",\"rank\": 2.7}");
+      handleRequest("{\"id\":13, \"title\": \"lucene 13\",\"rank\": 0.9}");
+      handleRequest("{\"id\":14, \"title\": \"lucene 14\",\"rank\": 4.1}");
+      handleRequest("{\"id\":15, \"title\": \"lucene 15\",\"rank\": 3.7}");
+      lindenCore.commit();
+      // the 1st and the 2nd segments are merged to a new sorted segment, the 3rd is not sorted
+      lindenCore.merge(2);
       lindenCore.refresh();
     } catch (IOException e) {
       e.printStackTrace();
@@ -78,11 +93,24 @@ public class TestLindenSortingMergePolicy {
   }
 
   @Test
-  public void testBasic() throws IOException {
-    String bql = "select * from linden source";
+  public void testEarlyTermination() throws IOException {
+    String bql = "select * from linden by query is \"title:(lucene 2)\" in top 3 limit 10 source";
     LindenSearchRequest request = bqlCompiler.compile(bql).getSearchRequest();
     LindenResult result = lindenCore.search(request);
-    Assert.assertEquals(5, result.getTotalHits());
-    Assert.assertEquals("4", result.getHits().get(0).getId());
+
+    Assert.assertEquals(8, result.getHits().size());
+    Assert.assertEquals("7", result.getHits().get(0).getId());
+
+    bql = "select * from linden by query is \"title:(lucene 13)\" in top 3 limit 10 source";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(8, result.getHits().size());
+    Assert.assertEquals("13", result.getHits().get(0).getId());
+
+    bql = "select * from linden by query is \"title:(lucene 13)\" in top 2 order by rank limit 10 source";
+    request = bqlCompiler.compile(bql).getSearchRequest();
+    result = lindenCore.search(request);
+    Assert.assertEquals(7, result.getHits().size());
+    Assert.assertEquals("7", result.getHits().get(0).getId());
   }
 }

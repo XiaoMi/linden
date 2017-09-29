@@ -36,6 +36,7 @@ import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TrackingIndexWriter;
 import org.apache.lucene.search.Collector;
@@ -66,6 +67,7 @@ import com.xiaomi.linden.core.search.query.filter.FilterConstructor;
 import com.xiaomi.linden.core.search.query.sort.SortConstructor;
 import com.xiaomi.linden.lucene.collector.EarlyTerminationCollector;
 import com.xiaomi.linden.lucene.collector.LindenDocsCollector;
+import com.xiaomi.linden.lucene.merge.SortingMergePolicyDecorator;
 import com.xiaomi.linden.thrift.common.FacetDrillingType;
 import com.xiaomi.linden.thrift.common.FileDiskUsageInfo;
 import com.xiaomi.linden.thrift.common.LindenDeleteRequest;
@@ -198,11 +200,16 @@ public class LindenCoreImpl extends LindenCore {
         topDocsCollector = TopScoreDocCollector.create(from + size, true);
       }
 
-      EarlyTerminationCollector earlyTerminationCollector = null;
       LindenDocsCollector lindenDocsCollector;
       if (request.isSetEarlyParam()) {
-        earlyTerminationCollector = new EarlyTerminationCollector(topDocsCollector,
-                                                                  request.getEarlyParam().getMaxNum());
+        MergePolicy mergePolicy = indexWriter.getConfig().getMergePolicy();
+        Sort mergePolicySort = null;
+        if (mergePolicy instanceof SortingMergePolicyDecorator) {
+          mergePolicySort = ((SortingMergePolicyDecorator) mergePolicy).getSort();
+        }
+        EarlyTerminationCollector
+            earlyTerminationCollector =
+            new EarlyTerminationCollector(topDocsCollector, mergePolicySort, request.getEarlyParam().getMaxNum());
         lindenDocsCollector = new LindenDocsCollector(earlyTerminationCollector);
       } else {
         lindenDocsCollector = new LindenDocsCollector(topDocsCollector);

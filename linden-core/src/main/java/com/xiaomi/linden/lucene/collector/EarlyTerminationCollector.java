@@ -17,26 +17,32 @@ package com.xiaomi.linden.lucene.collector;
 import java.io.IOException;
 
 import org.apache.lucene.index.AtomicReaderContext;
+import org.apache.lucene.index.sorter.SortingMergePolicy;
 import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopDocsCollector;
 
 public class EarlyTerminationCollector extends Collector {
 
   // docs to collect per segment reader
-  private final int numDocsToCollectPerSegment;
-  private int numCollected = 0;
+  private final int numDocsToCollectPerSortedSegment;
+  private int segmentTotalCollect;
+  private int numCollected;
+  private final Sort sort;
   private final TopDocsCollector collector;
+  private boolean segmentSorted;
 
-  public EarlyTerminationCollector(TopDocsCollector collector, int numDocsToCollectPerSegment) {
-    if (numDocsToCollectPerSegment <= 0) {
+  public EarlyTerminationCollector(TopDocsCollector collector, Sort sort, int numDocsToCollectPerSortedSegment) {
+    if (numDocsToCollectPerSortedSegment <= 0) {
       throw new IllegalStateException(
-          "numDocsToCollectPerSegment must always be > 0, got " + numDocsToCollectPerSegment);
+          "numDocsToCollectPerSortedSegment must always be > 0, got " + numDocsToCollectPerSortedSegment);
     }
     this.collector = collector;
-    this.numDocsToCollectPerSegment = numDocsToCollectPerSegment;
+    this.sort = sort;
+    this.numDocsToCollectPerSortedSegment = numDocsToCollectPerSortedSegment;
   }
 
   @Override
@@ -47,20 +53,26 @@ public class EarlyTerminationCollector extends Collector {
   @Override
   public void setNextReader(AtomicReaderContext context) throws IOException {
     collector.setNextReader(context);
+    if (sort != null) {
+      segmentSorted = SortingMergePolicy.isSorted(context.reader(), sort);
+      segmentTotalCollect = segmentSorted ? numDocsToCollectPerSortedSegment : 2147483647;
+    } else {
+      segmentTotalCollect = numDocsToCollectPerSortedSegment;
+    }
     numCollected = 0;
   }
 
   @Override
   public void collect(int doc) throws IOException {
     collector.collect(doc);
-    if (++numCollected >= numDocsToCollectPerSegment) {
+    if (++numCollected >= segmentTotalCollect) {
       throw new CollectionTerminatedException();
     }
   }
 
   @Override
   public boolean acceptsDocsOutOfOrder() {
-    return collector.acceptsDocsOutOfOrder();
+    return !segmentSorted && collector.acceptsDocsOutOfOrder();
   }
 
   public TopDocs topDocs() {

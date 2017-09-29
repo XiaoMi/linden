@@ -19,12 +19,10 @@ import java.util.Map;
 
 import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.index.sorter.SortingMergePolicy;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 
 import com.xiaomi.linden.plugin.LindenPluginFactory;
-
 
 public class SortingMergePolicyFactory implements LindenPluginFactory<MergePolicy> {
 
@@ -40,7 +38,12 @@ public class SortingMergePolicyFactory implements LindenPluginFactory<MergePolic
       sortFieldType = SortField.Type.valueOf(params.get(SORT_FIELD_TYPE).toUpperCase());
     }
 
-    Boolean desc = true;
+    if (sortFieldType == SortField.Type.DOC) {
+      throw new IOException(
+          "Relying on internal lucene DocIDs is not guaranteed to work, this is only an implementation detail.");
+    }
+
+    boolean desc = true;
     if (params.containsKey(SORT_DESC)) {
       try {
         desc = Boolean.valueOf(params.get(SORT_DESC));
@@ -49,6 +52,8 @@ public class SortingMergePolicyFactory implements LindenPluginFactory<MergePolic
       }
     }
     SortField sortField = new SortField(field, sortFieldType, desc);
-    return new SortingMergePolicy(new TieredMergePolicy(), new Sort(sortField));
+    Sort sort = new Sort(sortField);
+    return new SortingMergePolicyDecorator(new TieredMergePolicy(), sort);
   }
+
 }
