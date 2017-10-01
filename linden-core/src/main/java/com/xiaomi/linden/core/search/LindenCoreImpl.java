@@ -312,14 +312,15 @@ public class LindenCoreImpl extends LindenCore {
         .setFileUsedInfos(fileDiskUsageInfos);
   }
 
+  @Override
+  public Response mergeIndex(int maxNumSegments) throws IOException {
+    indexWriter.forceMerge(maxNumSegments);
+    return ResponseUtils.SUCCESS;
+  }
+
   // refresh right now
   public void refresh() throws IOException {
     lindenNRTSearcherManager.maybeRefresh();
-  }
-
-  @Override
-  public void merge(int segmentCount) throws IOException {
-    indexWriter.forceMerge(segmentCount);
   }
 
   @Override

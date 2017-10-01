@@ -307,7 +307,6 @@ public class CoreLindenCluster extends LindenCluster {
 
   @Override
   public Response index(String content) throws IOException {
-
     List<Future<BoxedUnit>> futures = new ArrayList<>();
     List<String> hosts = new ArrayList<>();
     final StringBuilder errorInfo = new StringBuilder();
@@ -363,6 +362,63 @@ public class CoreLindenCluster extends LindenCluster {
       return ResponseUtils.SUCCESS;
     } catch (Exception e) {
       LOGGER.error("Handle request failed, content : {} - {}", content, Throwables.getStackTraceAsString(e));
+      LOGGER.error(getHostFutureInfo(hosts, futures));
+      return ResponseUtils.buildFailedResponse(e);
+    }
+  }
+
+  @Override
+  public Response executeCommand(final String command) throws IOException {
+    List<Future<BoxedUnit>> futures = new ArrayList<>();
+    List<String> hosts = new ArrayList<>();
+    final StringBuilder errorInfo = new StringBuilder();
+    for (final Map.Entry<Integer, ShardClient> entry : clients.entrySet()) {
+      ShardClient shardClient = entry.getValue();
+      if (shardClient.isAvailable()) {
+        final List<Map.Entry<String, Future<Response>>> hostFuturePairs = shardClient.executeCommand(command);
+        for (final Map.Entry<String, Future<Response>> hostFuturePair : hostFuturePairs) {
+          hosts.add(hostFuturePair.getKey());
+          futures.add(hostFuturePair.getValue().transformedBy(new FutureTransformer<Response, BoxedUnit>() {
+            @Override
+            public BoxedUnit map(Response response) {
+              if (!response.isSuccess()) {
+                LOGGER.error("Shard [{}] host [{}] failed to execute command {} error: {}",
+                             entry.getKey(), hostFuturePair.getKey(), command, response.getError());
+                synchronized (errorInfo) {
+                  errorInfo.append(
+                      "Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + response.getError() + ";");
+                }
+              }
+              return BoxedUnit.UNIT;
+            }
+
+            @Override
+            public BoxedUnit handle(Throwable t) {
+              LOGGER.error("Shard [{}] host [{}] failed to execute command {} throwable: {}\"",
+                           entry.getKey(), hostFuturePair.getKey(), command, Throwables.getStackTraceAsString(t));
+              synchronized (errorInfo) {
+                errorInfo.append("Shard " + entry.getKey() + " host " + hostFuturePair.getKey() + ":" + Throwables
+                    .getStackTraceAsString(t) + ";");
+              }
+              return BoxedUnit.UNIT;
+            }
+          }));
+        }
+      }
+    }
+    try {
+      Future<List<BoxedUnit>> collected = Future.collect(futures);
+      if (clusterFutureAwaitTimeout == 0) {
+        Await.result(collected);
+      } else {
+        Await.result(collected, Duration.apply(clusterFutureAwaitTimeout, TimeUnit.MILLISECONDS));
+      }
+      if (errorInfo.length() > 0) {
+        return ResponseUtils.buildFailedResponse("command " + command + " failed: " + errorInfo.toString());
+      }
+      return ResponseUtils.SUCCESS;
+    } catch (Exception e) {
+      LOGGER.error("command {} failed {}", command, Throwables.getStackTraceAsString(e));
       LOGGER.error(getHostFutureInfo(hosts, futures));
       return ResponseUtils.buildFailedResponse(e);
     }

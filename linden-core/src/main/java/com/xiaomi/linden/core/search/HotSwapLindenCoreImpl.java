@@ -161,7 +161,8 @@ public class HotSwapLindenCoreImpl extends LindenCore {
     return lindenCore;
   }
 
-  private synchronized Response swapIndex(String indexName) throws IOException {
+  @Override
+  public synchronized Response swapIndex(String indexName) throws IOException {
     if (Strings.isNullOrEmpty(indexName)) {
       throw new IOException("Index name is empty in swap index request.");
     }
@@ -210,6 +211,11 @@ public class HotSwapLindenCoreImpl extends LindenCore {
       }
     }
     return ResponseUtils.SUCCESS;
+  }
+
+  @Override
+  public Response mergeIndex(int maxNumSegments) throws IOException {
+    return currentLindenCore.mergeIndex(maxNumSegments);
   }
 
   @Override
@@ -264,10 +270,5 @@ public class HotSwapLindenCoreImpl extends LindenCore {
     List<FileDiskUsageInfo> fileUsedInfos = RuntimeInfoUtils.getRuntimeFileInfo(paths);
     serviceInfo.setIndexNames(indexNames).setFileUsedInfos(fileUsedInfos);
     return serviceInfo;
-  }
-
-  @Override
-  public void merge(int segmentCount) throws IOException {
-    currentLindenCore.merge(segmentCount);
   }
 }

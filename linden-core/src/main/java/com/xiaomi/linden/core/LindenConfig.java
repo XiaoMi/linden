@@ -12,7 +12,6 @@ import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.MergePolicy;
-import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.similarities.DefaultSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.spatial.SpatialStrategy;
@@ -48,6 +47,11 @@ public class LindenConfig {
     SIMPLE,
     MULTI,
     HOTSWAP,
+  }
+
+  public enum CommandType {
+    SWAP_INDEX,
+    MERGE_INDEX,
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LindenConfig.class);

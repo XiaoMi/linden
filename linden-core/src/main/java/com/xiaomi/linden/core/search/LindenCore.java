@@ -14,17 +14,67 @@
 
 package com.xiaomi.linden.core.search;
 
-import com.xiaomi.linden.thrift.common.*;
-
 import java.io.IOException;
 
+import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.lang.StringUtils;
+
+import com.xiaomi.linden.core.LindenConfig;
+import com.xiaomi.linden.thrift.common.LindenDeleteRequest;
+import com.xiaomi.linden.thrift.common.LindenIndexRequest;
+import com.xiaomi.linden.thrift.common.LindenResult;
+import com.xiaomi.linden.thrift.common.LindenSearchRequest;
+import com.xiaomi.linden.thrift.common.LindenServiceInfo;
+import com.xiaomi.linden.thrift.common.Response;
+
 abstract public class LindenCore {
+
+  protected static final String COMMAND_TYPE = "type";
+  protected static final String COMMAND_OPTIONS = "options";
+
   abstract public LindenResult search(LindenSearchRequest request) throws IOException;
+
   abstract public Response delete(LindenDeleteRequest request) throws IOException;
+
   abstract public void refresh() throws IOException;
+
   abstract public Response index(LindenIndexRequest request) throws IOException;
+
   abstract public void commit() throws IOException;
+
   abstract public void close() throws IOException;
+
   abstract public LindenServiceInfo getServiceInfo() throws IOException;
-  abstract public void merge(int segmentCount) throws IOException;
+
+  public Response swapIndex(String indexName) throws IOException {
+    throw new IOException("Current linden core mode doesn't support swap index");
+  }
+
+  abstract public Response mergeIndex(int maxNumSegments) throws IOException;
+
+  public Response executeCommand(String command) throws IOException {
+    JSONObject jsonCommand = JSONObject.parseObject(command);
+    String type = jsonCommand.getString(COMMAND_TYPE);
+    JSONObject options = jsonCommand.getJSONObject(COMMAND_OPTIONS);
+    if (type == null || options == null) {
+      throw new IOException("No command type or options");
+    }
+    LindenConfig.CommandType commandType = LindenConfig.CommandType.valueOf(type.toUpperCase());
+    switch (commandType) {
+      case SWAP_INDEX:
+        String indexName = options.getString("index");
+        if (StringUtils.isEmpty(indexName)) {
+          throw new IOException("Index name is empty in options " + options);
+        }
+        return swapIndex(indexName);
+      case MERGE_INDEX:
+        Integer maxNumSegments = options.getInteger("count");
+        if (maxNumSegments == null || maxNumSegments < 1) {
+          throw new IOException("Invalid count in options " + options);
+        }
+        return mergeIndex(maxNumSegments);
+      default:
+        throw new IOException("Unsupported command type: " + command);
+    }
+  }
 }

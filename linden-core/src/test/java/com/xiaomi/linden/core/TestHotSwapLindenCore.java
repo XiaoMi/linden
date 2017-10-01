@@ -131,10 +131,7 @@ public class TestHotSwapLindenCore {
     Assert.assertEquals(400, lindenCore.getServiceInfo().getDocsNum());
 
     // swap current index with indexName 1
-    json = new JSONObject();
-    json.put("type", "swap_index");
-    json.put("index", indexName1);
-    handleRequest(json.toJSONString());
+    lindenCore.swapIndex(indexName1);
     Assert.assertEquals(3, lindenCore.getServiceInfo().getIndexNames().size());
     Assert.assertEquals(101, lindenCore.getServiceInfo().getDocsNum());
 
@@ -250,10 +247,7 @@ public class TestHotSwapLindenCore {
     Assert.assertEquals(101, lindenCore.getServiceInfo().getDocsNum());
 
     // swap current index with indexName 3
-    json = new JSONObject();
-    json.put("type", "swap_index");
-    json.put("index", indexName3);
-    handleRequest(json.toJSONString());
+    lindenCore.swapIndex(indexName3);
     // swap multiple times
     handleRequest(json.toJSONString());
     Assert.assertEquals(2, lindenCore.getServiceInfo().getIndexNames().size());

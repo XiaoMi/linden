@@ -22,6 +22,7 @@ abstract public class LindenCluster {
   abstract public LindenResult search(LindenSearchRequest request) throws IOException;
   abstract public Response delete(LindenDeleteRequest request) throws IOException;
   abstract public Response index(String content) throws IOException;
+  abstract public Response executeCommand(String command) throws IOException;
   abstract public void close() throws IOException;
   abstract public CacheInfo getCacheInfo() throws IOException;
 }

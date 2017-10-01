@@ -176,6 +176,11 @@ public class LindenClient {
     return timeout == 0 ? Await.result(response) : Await.result(response, duration);
   }
 
+  public Response executeCommand(String command) throws Exception {
+    Future<Response> response = get().handleClusterCommand(command);
+    return timeout == 0 ? Await.result(response) : Await.result(response, duration);
+  }
+
   @Deprecated
   public LindenResult searchByBQL(String bql) throws Exception {
     Future<LindenResult> result = get().searchByBqlCluster(bql);

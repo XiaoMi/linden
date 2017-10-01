@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Throwables;
 import com.twitter.util.Duration;
 import com.twitter.util.Future;
@@ -365,9 +366,10 @@ public class MultiLindenCoreImpl extends LindenCore {
   }
 
   @Override
-  public void merge(int segmentCount) throws IOException {
+  public Response mergeIndex(int maxNumSegments) throws IOException {
     for (Map.Entry<String, LindenCore> entry : lindenCoreMap.entrySet()) {
-      entry.getValue().merge(segmentCount);
+      entry.getValue().mergeIndex(maxNumSegments);
     }
+    return ResponseUtils.SUCCESS;
   }
 }

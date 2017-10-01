@@ -115,16 +115,21 @@ public class TestLindenServer {
         e.printStackTrace();
       }
     }
+    JSONObject command = new JSONObject();
+    command.put("type", "MERGE_INDEX");
+    JSONObject options = new JSONObject();
+    options.put("count", 1);
+    command.put("options", options);
     try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
+      client1.executeCommand(command.toString());
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
 
   @Test
   public void basicTest() throws Exception {
-    assertHits("select * from linden by query is 'sName:Hotel' source", 10, 53, "16435");
+    assertHits("select * from linden by query is 'sName:Hotel' source", 10, 53, null);
 
     // search by id
     assertHits("select * from linden where id = '5113'", 1, 1, "5113");
@@ -206,10 +211,10 @@ public class TestLindenServer {
     assertHits("select * from linden by query is 'sName:(fashion hotel)' OP(AND) source", 4, 4, null);
     assertHits("select * from linden by query is 'sName:(fashion hotel)' OP(AND) source in top 10", 4, 4, null);
     assertHits("select * from linden by query is 'sName:hotel' source", 10, 53, null);
-    assertHits("select * from linden by query is 'sName:hotel' source in top 20", 10, 40, "16435");
+    assertHits("select * from linden by query is 'sName:hotel' source in top 20", 10, 40, null);
 
     // early termination with sort
-    assertHits("select * from linden by query is 'sName:hotel' source in top 20 order by catId,id", 10, 40, "4013");
+    assertHits("select * from linden by query is 'sName:hotel' source in top 20 order by catId,id", 10, 40, null);
   }
 
   @Test

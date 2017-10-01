@@ -16,6 +16,7 @@ package com.xiaomi.linden.core;
 
 import java.io.IOException;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -80,7 +81,7 @@ public class TestLindenSortingMergePolicy {
       handleRequest("{\"id\":15, \"title\": \"lucene 15\",\"rank\": 3.7}");
       lindenCore.commit();
       // the 1st and the 2nd segments are merged to a new sorted segment, the 3rd is not sorted
-      lindenCore.merge(2);
+      lindenCore.mergeIndex(2);
       lindenCore.refresh();
     } catch (IOException e) {
       e.printStackTrace();

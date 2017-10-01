@@ -180,6 +180,15 @@ public class ShardClient {
     return hostFuturePairs;
   }
 
+  public List<Map.Entry<String, Future<Response>>> executeCommand(String command) {
+    List<Map.Entry<String, Future<Response>>> hostFuturePairs = new ArrayList<>();
+    for (Map.Entry<String, LindenService.ServiceIface> hostClientPair : clients) {
+      Future<Response> future = hostClientPair.getValue().executeCommand(command);
+      hostFuturePairs.add(new AbstractMap.SimpleEntry<>(hostClientPair.getKey(), future));
+    }
+    return hostFuturePairs;
+  }
+
   @Override
   public String toString() {
     return String.format("zk:%s, path:%s, clients num:%d", zk, path, clients.size());
