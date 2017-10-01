@@ -93,7 +93,7 @@ public class LindenConfig {
     this.port = 9090;
     this.shardId = 0;
     this.indexType = IndexType.MMAP;
-    this.clusterFutureAwaitTimeout = 1000;
+    this.clusterFutureAwaitTimeout = 2000;
     this.clusterFuturePoolWaitTimeout = 200;
     this.instanceFuturePoolWaitTimeout = 200;
     this.enableParallelSearch = true;
