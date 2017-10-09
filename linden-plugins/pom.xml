@@ -5,7 +5,7 @@
     <parent>
         <artifactId>linden-parent</artifactId>
         <groupId>com.xiaomi.linden</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.1-SNAPSHOT</version>
         <relativePath>../linden-parent/pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
