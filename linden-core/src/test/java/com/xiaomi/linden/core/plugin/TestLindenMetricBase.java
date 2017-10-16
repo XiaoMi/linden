@@ -30,10 +30,6 @@ public class TestLindenMetricBase {
 
   public TestLindenMetricBase() throws Exception {
     lindenConfig = new LindenConfig().setIndexType(LindenConfig.IndexType.RAM).setClusterUrl("127.0.0.1:2181/test");
-    lindenConfig.setMergePolicy("org.apache.lucene.index.TieredMergePolicy");
-    lindenConfig.putToProperties("merge.policy.standard_lucene_class", "org.apache.lucene.index.TieredMergePolicy");
-    lindenConfig.putToProperties("merge.policy.segments.per.tier", "10");
-    lindenConfig.putToProperties("merge.policy.max.merge.at.once", "10");
     lindenConfig.setLindenMetricFactory("com.xiaomi.linden.plugin.metrics.MetricsManagerFactory");
     lindenConfig.putToProperties("metrics.class", "com.xiaomi.linden.plugin.metrics.MetricsManager");
     lindenConfig.putToProperties("metrics.report.period", "120");

@@ -49,7 +49,6 @@ public class TestMultiLindenCore {
 
   public TestMultiLindenCore() throws Exception {
     lindenConfig = new LindenConfig().setIndexType(LindenConfig.IndexType.RAM).setClusterUrl("127.0.0.1:2181/test");
-    lindenConfig.setMergePolicy("org.apache.lucene.index.TieredMergePolicy");
     lindenConfig.putToProperties("merge.policy.class", "org.apache.lucene.index.TieredMergePolicy");
     lindenConfig.putToProperties("merge.policy.segments.per.tier", "10");
     lindenConfig.putToProperties("merge.policy.max.merge.at.once", "10");

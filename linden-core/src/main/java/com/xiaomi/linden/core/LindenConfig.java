@@ -72,7 +72,6 @@ public class LindenConfig {
   private int instanceFuturePoolWaitTimeout;
   private int adminPort;
   private com.xiaomi.linden.thrift.common.LindenSchema schema;
-  private String mergePolicy;
   private boolean enableParallelSearch;
   private int cacheDuration;
   private int cacheSize;
@@ -264,15 +263,6 @@ public class LindenConfig {
     LindenFieldSchema idSchema = new LindenFieldSchema(schema.getId(), LindenType.STRING);
     idSchema.setIndexed(true).setStored(true).setOmitNorms(true);
     fieldSchemaMap.put(idSchema.getName(), idSchema);
-    return this;
-  }
-
-  public String getMergePolicy() {
-    return this.mergePolicy;
-  }
-
-  public LindenConfig setMergePolicy(String mergePolicy) {
-    this.mergePolicy = mergePolicy;
     return this;
   }
 

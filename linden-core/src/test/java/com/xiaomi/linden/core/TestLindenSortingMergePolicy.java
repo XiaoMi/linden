@@ -39,7 +39,6 @@ public class TestLindenSortingMergePolicy {
 
   public TestLindenSortingMergePolicy() throws Exception {
     lindenConfig = new LindenConfig().setIndexType(LindenConfig.IndexType.RAM).setClusterUrl("127.0.0.1:2181/test");
-    lindenConfig.setMergePolicy("com.xiaomi.linden.lucene.merge.SortingMergePolicyFactory");
     lindenConfig.putToProperties("merge.policy.class",
                                  "com.xiaomi.linden.lucene.merge.SortingMergePolicyFactory");
     lindenConfig.putToProperties("merge.policy.sort.field", "rank");

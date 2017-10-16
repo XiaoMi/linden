@@ -99,7 +99,6 @@ public class LindenConfigBuilder {
     fieldMap.put(INSTANCE_FUTURE_POOL_WAIT_TIMEOUT, new FieldInfo("InstanceFuturePoolWaitTimeout", int.class));
     fieldMap.put(ADMIN_PORT, new FieldInfo("AdminPort", int.class));
     fieldMap.put(ENABLE_PARALLEL_SEARCH, new FieldInfo("EnableParallelSearch", boolean.class));
-    fieldMap.put(MERGE_POLICY, new FieldInfo("MergePolicy", String.class));
     fieldMap.put(CACHE_DURATION, new FieldInfo("CacheDuration", int.class));
     fieldMap.put(CACHE_SIZE, new FieldInfo("CacheSize", int.class));
     fieldMap.put(USE_CACHE, new FieldInfo("EnableCache", boolean.class));
