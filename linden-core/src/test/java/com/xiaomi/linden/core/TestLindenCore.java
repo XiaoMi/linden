@@ -193,6 +193,24 @@ public class TestLindenCore extends TestLindenCoreBase {
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(4, result.getTotalHits());
     Assert.assertEquals(103f, result.getHits().get(0).getScore(), 0.1f);
+
+    // bad score model function
+    func = " return rank() * 10 + a;";
+    model = new LindenScoreModel().setName("test").setFunc(func);
+
+    request = new LindenSearchRequest().setQuery(
+        LindenQueryBuilder.buildTermQuery("title", "lucene").setScoreModel(model));
+
+    try {
+      lindenCore.search(request);
+    } catch (Exception e) {
+      // do nothing
+    }
+    try {
+      lindenCore.search(request);
+    } catch (Exception e) {
+      Assert.assertTrue(e.getMessage().contains("score model test compile failed, please check score model code"));
+    }
   }
 
   @Test

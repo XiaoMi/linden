@@ -39,6 +39,7 @@ public class LindenScoreModelStrategyBuilder {
 
   private static final HashSet<String> importMap = Sets.newHashSet();
   private static final Map<String, Class<?>> compiledClassMap = Maps.newConcurrentMap();
+  private static final Map<String, String> failedClassMap = Maps.newConcurrentMap();
   private static final Map<String, Class<?>> pluginClassMap = Maps.newConcurrentMap();
   private static final String LATITUDE = "latitude";
   private static final String LONGITUDE = "longitude";
@@ -177,6 +178,9 @@ public class LindenScoreModelStrategyBuilder {
     if (clazz != null) {
       return (LindenScoreModelStrategy) clazz.newInstance();
     } else {
+      if (failedClassMap.containsKey(className)) {
+        throw new Exception("score model " + model.getName() + " compile failed, please check score model code");
+      }
       StringWriter classBody = new StringWriter();
       PrintWriter classPrinter = new PrintWriter(classBody);
       String classHeader = String.format(classHeaderFormat, className);
@@ -272,7 +276,8 @@ public class LindenScoreModelStrategyBuilder {
       try {
         clazz = JavaCompilerHelper.createClass(className, classBody.toString());
       } catch (Exception e) {
-        throw new Exception(Throwables.getStackTraceAsString(e) + " " + classBody.toString());
+        failedClassMap.put(className, e.getMessage());
+        throw new Exception(Throwables.getStackTraceAsString(e) + "\n" + classBody.toString());
       }
       compiledClassMap.put(className, clazz);
       return (LindenScoreModelStrategy) clazz.newInstance();
