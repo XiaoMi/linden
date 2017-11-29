@@ -34,6 +34,8 @@ public class EarlyTerminationCollector extends Collector {
   private final Sort sort;
   private final TopDocsCollector collector;
   private boolean segmentSorted;
+  private static CollectionTerminatedException TERMINATED_EXCEPTION = new CollectionTerminatedException();
+
 
   public EarlyTerminationCollector(TopDocsCollector collector, Sort sort, int numDocsToCollectPerSortedSegment) {
     if (numDocsToCollectPerSortedSegment <= 0) {
@@ -66,7 +68,7 @@ public class EarlyTerminationCollector extends Collector {
   public void collect(int doc) throws IOException {
     collector.collect(doc);
     if (++numCollected >= segmentTotalCollect) {
-      throw new CollectionTerminatedException();
+      throw TERMINATED_EXCEPTION;
     }
   }
 

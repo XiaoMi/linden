@@ -195,9 +195,9 @@ public class LindenCoreImpl extends LindenCore {
 
       TopDocsCollector topDocsCollector;
       if (sort != null) {
-        topDocsCollector = TopFieldCollector.create(sort, from + size, null, true, false, false, true);
+        topDocsCollector = TopFieldCollector.create(sort, from + size, null, true, false, false, false);
       } else {
-        topDocsCollector = TopScoreDocCollector.create(from + size, true);
+        topDocsCollector = TopScoreDocCollector.create(from + size, false);
       }
 
       LindenDocsCollector lindenDocsCollector;

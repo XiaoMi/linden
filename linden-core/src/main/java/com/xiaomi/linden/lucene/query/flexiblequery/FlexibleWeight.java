@@ -38,10 +38,12 @@ import org.apache.lucene.util.Bits;
 import com.xiaomi.linden.core.search.query.model.LindenScoreModelStrategyBuilder;
 
 public class FlexibleWeight extends Weight {
+
   private FlexibleQuery query;
   private Similarity similarity;
 
   static public class TermStats {
+
     public Similarity.SimWeight stats;
     public Term term;
     public TermContext termContext;
@@ -117,8 +119,8 @@ public class FlexibleWeight extends Weight {
           termStats = searcher.termStatistics(term.term, state);
         }
         Similarity.SimWeight stats = similarity.computeWeight(term.boost,
-            searcher.collectionStatistics(term.term.field()),
-            termStats);
+                                                              searcher.collectionStatistics(term.term.field()),
+                                                              termStats);
         TermStats termStatsInfo = new TermStats();
         termStatsInfo.stats = stats;
         termStatsInfo.term = term.term;
@@ -163,8 +165,9 @@ public class FlexibleWeight extends Weight {
   public void normalize(float norm, float topLevelBoost) {
     topLevelBoost *= query.getBoost();
     for (TermStats[] aTermStatsMatrix : termStatsMatrix) {
-      for (TermStats termStats : aTermStatsMatrix)
+      for (TermStats termStats : aTermStatsMatrix) {
         termStats.stats.normalize(norm, topLevelBoost);
+      }
     }
   }
 
@@ -213,5 +216,10 @@ public class FlexibleWeight extends Weight {
     strategy.setSimilarity(similarity);
     strategy.init();
     return new FlexibleScorer(this, strategy, matchedEnumsMatrix);
+  }
+
+  @Override
+  public boolean scoresDocsOutOfOrder() {
+    return true;
   }
 }
