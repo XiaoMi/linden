@@ -14,35 +14,19 @@
 
 package com.xiaomi.linden.common.util;
 
-import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CommonUtils {
 
-  public static int getAvailablePort() {
-    int port = new Random().nextInt(10000) + 10000;
-    while (!isPortAvailable(port)) {
-      port = new Random().nextInt(10000) + 10000;
-    }
-    return port;
-  }
-
-  public static boolean isPortAvailable(int port) {
-    try {
-      ServerSocket server = new ServerSocket(port);
-      server.close();
-      return true;
-    } catch (IOException e) {
-    }
-    return false;
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(CommonUtils.class);
 
   public static String getLocalHost() {
     try {
@@ -52,19 +36,35 @@ public class CommonUtils {
     }
   }
 
+  private static final String DockerIP = "172.17.42.1";
+  private static final String CONTAINER_ENV_KEY = "CONTAINER_ENV";
+  private static final String HOST_IP_KEY = "HOST_IP";
+
   public static String getLocalHostIp() {
+    // for container env
+    if (System.getenv(CONTAINER_ENV_KEY) != null && System.getenv(CONTAINER_ENV_KEY).equals("true")
+        && System.getenv(HOST_IP_KEY) != null) {
+      LOGGER.debug("Using the IP address {} from container env", System.getenv(HOST_IP_KEY));
+      return System.getenv(HOST_IP_KEY);
+    }
+
     try {
       for (NetworkInterface iface : Collections.list(NetworkInterface.getNetworkInterfaces())) {
-        if (!iface.getName().startsWith("vmnet")) {
-          for (InetAddress raddr : Collections.list(iface.getInetAddresses())) {
-            if (raddr.isSiteLocalAddress() && !raddr.isLoopbackAddress() && !(raddr instanceof Inet6Address)) {
-              return raddr.getHostAddress();
-            }
+        for (InetAddress addr : Collections.list(iface.getInetAddresses())) {
+          LOGGER.debug("Checking ip address {}", addr);
+          String hostAddress = addr.getHostAddress();
+          // The docker virtual environment uses a virtual ip which should be skipped.
+          if (addr.isSiteLocalAddress()
+              && !addr.isLoopbackAddress()
+              && !(addr instanceof Inet6Address)
+              && !hostAddress.equals(DockerIP)) {
+            LOGGER.debug("Ok, the ip {} will be used.", addr);
+            return hostAddress;
           }
         }
       }
     } catch (SocketException e) {
-      throw new IllegalStateException("Couldn't find the local machine ip.", e);
+      LOGGER.error("Couldn't find the local machine ip.", e);
     }
     throw new IllegalStateException("Couldn't find the local machine ip.");
   }
