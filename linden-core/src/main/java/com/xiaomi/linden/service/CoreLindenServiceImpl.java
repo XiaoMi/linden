@@ -614,6 +614,7 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
     return instanceExecutorPool.apply(new Function0<Response>() {
       @Override
       public Response apply() {
+        LOGGER.info("Receive command {}", command);
         Response response = null;
         try {
           long eps = sw.elapsed(TimeUnit.MILLISECONDS);

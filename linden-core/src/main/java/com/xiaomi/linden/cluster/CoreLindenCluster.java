@@ -369,6 +369,7 @@ public class CoreLindenCluster extends LindenCluster {
 
   @Override
   public Response executeCommand(final String command) throws IOException {
+    LOGGER.info("Receive cluster command {}", command);
     List<Future<BoxedUnit>> futures = new ArrayList<>();
     List<String> hosts = new ArrayList<>();
     final StringBuilder errorInfo = new StringBuilder();
@@ -411,14 +412,16 @@ public class CoreLindenCluster extends LindenCluster {
       if (clusterFutureAwaitTimeout == 0) {
         Await.result(collected);
       } else {
-        Await.result(collected, Duration.apply(clusterFutureAwaitTimeout, TimeUnit.MILLISECONDS));
+        // executeCommand may take a very long time, so set timeout to 30min specially
+        Await.result(collected, Duration.apply(30, TimeUnit.MINUTES));
       }
       if (errorInfo.length() > 0) {
         return ResponseUtils.buildFailedResponse("command " + command + " failed: " + errorInfo.toString());
       }
+      LOGGER.error("Cluster command {} succeeded", command);
       return ResponseUtils.SUCCESS;
     } catch (Exception e) {
-      LOGGER.error("command {} failed {}", command, Throwables.getStackTraceAsString(e));
+      LOGGER.error("Cluster command {} failed {}", command, Throwables.getStackTraceAsString(e));
       LOGGER.error(getHostFutureInfo(hosts, futures));
       return ResponseUtils.buildFailedResponse(e);
     }
