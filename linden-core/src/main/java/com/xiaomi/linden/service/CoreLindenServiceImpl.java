@@ -177,8 +177,8 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
     int availableProcessors = Runtime.getRuntime().availableProcessors();
     if (threadConfig == null) {
       int min = 2 * availableProcessors;
-      int max = 2 * availableProcessors;
-      return new ThreadPoolExecutor(min, max, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(1000),
+      int max = 3 * availableProcessors;
+      return new ThreadPoolExecutor(min, max, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(500),
                                     new ThreadPoolExecutor.DiscardOldestPolicy());
     }
     int min = threadConfig.containsKey("min") ? threadConfig.getInteger("min") : 2 * availableProcessors + 1;
