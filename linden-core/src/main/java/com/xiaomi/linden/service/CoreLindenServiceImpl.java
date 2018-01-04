@@ -80,7 +80,7 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
   private int instanceFuturePoolWaitTimeout;
   private int clusterFuturePoolWaitTimeout;
 
-  public CoreLindenServiceImpl(LindenConfig config) throws Exception {
+  public CoreLindenServiceImpl(final LindenConfig config) throws Exception {
     Preconditions.checkArgument(config != null, "LindenConfig can not be null.");
     this.config = config;
 
@@ -163,8 +163,12 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
                         Runtime.getRuntime().maxMemory() / 1024 / 1024,
                         Runtime.getRuntime().totalMemory() / 1024 / 1024,
                         Runtime.getRuntime().freeMemory() / 1024 / 1024);
-          } catch (InterruptedException e) {
-            break;
+            if (config.isEnableCache()) {
+              CacheInfo cacheInfo = lindenCluster.getCacheInfo();
+              LOGGER.info("Linden cache stats: " + cacheInfo);
+            }
+          } catch (Exception e) {
+            // do nothing
           }
         }
       }

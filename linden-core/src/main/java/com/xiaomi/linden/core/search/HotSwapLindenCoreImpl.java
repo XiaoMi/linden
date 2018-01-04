@@ -172,6 +172,7 @@ public class HotSwapLindenCoreImpl extends LindenCore {
     // May receive swap request more than one times
     String nextIndexTimeStamp = indexName.substring(NEXT_INDEX_NAME_PREFIX.length());
     if (!currentIndexTimeStamp.equals(nextIndexTimeStamp)) {
+      LOGGER.info("Begin swapping index " + indexName);
       if (!lindenCoreMap.containsKey(indexName)) {
         LOGGER.error("No index found for: " + indexName);
         return ResponseUtils.buildFailedResponse("No index found for: " + indexName);
@@ -209,6 +210,7 @@ public class HotSwapLindenCoreImpl extends LindenCore {
         // close last core
         lastCore.close();
       }
+      LOGGER.info("Swapping index " + indexName + " done");
     }
     return ResponseUtils.SUCCESS;
   }
@@ -221,7 +223,13 @@ public class HotSwapLindenCoreImpl extends LindenCore {
   @Override
   public Response index(LindenIndexRequest request) throws IOException {
     if (request.getType().equals(IndexRequestType.SWAP_INDEX)) {
-      return swapIndex(request.getIndexName());
+      Response response;
+      try {
+        response = swapIndex(request.getIndexName());
+      } catch (Exception e) {
+        throw new IOException("Swapping index " + request.getIndexName() + " failed!", e);
+      }
+      return response;
     }
     String indexName = request.getIndexName();
     LindenCore core = currentLindenCore;
