@@ -372,4 +372,12 @@ public class MultiLindenCoreImpl extends LindenCore {
     }
     return ResponseUtils.SUCCESS;
   }
+
+  @Override
+  public Response flushIndex() throws IOException {
+    for (Map.Entry<String, LindenCore> entry : lindenCoreMap.entrySet()) {
+      entry.getValue().flushIndex();
+    }
+    return ResponseUtils.SUCCESS;
+  }
 }

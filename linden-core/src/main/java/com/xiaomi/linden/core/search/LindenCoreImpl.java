@@ -318,6 +318,15 @@ public class LindenCoreImpl extends LindenCore {
     return ResponseUtils.SUCCESS;
   }
 
+  @Override
+  public Response flushIndex() throws IOException {
+    indexWriter.commit();
+    if (taxoWriter != null) {
+      taxoWriter.commit();
+    }
+    return ResponseUtils.SUCCESS;
+  }
+
   // refresh right now
   public void refresh() throws IOException {
     lindenNRTSearcherManager.maybeRefresh();

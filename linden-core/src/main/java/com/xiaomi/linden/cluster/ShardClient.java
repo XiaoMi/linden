@@ -51,6 +51,7 @@ public class ShardClient {
   private boolean haslocalClient = false;
   private final Integer shardId;
   private final LindenService.ServiceIface localClient;
+  private static final String HOST = "host";
 
   private volatile List<Map.Entry<String, LindenService.ServiceIface>> clients;
 
@@ -180,10 +181,15 @@ public class ShardClient {
     return hostFuturePairs;
   }
 
-  public List<Map.Entry<String, Future<Response>>> executeCommand(String command) {
+  public List<Map.Entry<String, Future<Response>>> executeCommand(JSONObject jsonCmd) {
     List<Map.Entry<String, Future<Response>>> hostFuturePairs = new ArrayList<>();
+    String host = jsonCmd.getString(HOST);
     for (Map.Entry<String, LindenService.ServiceIface> hostClientPair : clients) {
-      Future<Response> future = hostClientPair.getValue().executeCommand(command);
+      // host client pair key is in host:port format
+      if (host != null && !hostClientPair.getKey().startsWith(host)) {
+        continue;
+      }
+      Future<Response> future = hostClientPair.getValue().executeCommand(jsonCmd.toString());
       hostFuturePairs.add(new AbstractMap.SimpleEntry<>(hostClientPair.getKey(), future));
     }
     return hostFuturePairs;

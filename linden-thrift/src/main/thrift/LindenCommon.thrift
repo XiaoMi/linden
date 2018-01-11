@@ -114,7 +114,7 @@ struct JVMInfo {
 
 struct FileDiskUsageInfo {
     1: required string dirName,
-    2: optional i64 diskUsage
+    2: optional i64 diskUsage,
 }
 
 struct LindenServiceInfo {

@@ -52,6 +52,9 @@ public class LindenConfig {
   public enum CommandType {
     SWAP_INDEX,
     MERGE_INDEX,
+    FLUSH_INDEX,
+    PAUSE_INDEXING,
+    RESUME_INDEXING,
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LindenConfig.class);

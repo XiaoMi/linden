@@ -221,6 +221,11 @@ public class HotSwapLindenCoreImpl extends LindenCore {
   }
 
   @Override
+  public Response flushIndex() throws IOException {
+    return currentLindenCore.flushIndex();
+  }
+
+  @Override
   public Response index(LindenIndexRequest request) throws IOException {
     if (request.getType().equals(IndexRequestType.SWAP_INDEX)) {
       Response response;

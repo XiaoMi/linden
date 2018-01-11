@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.zkclient.ZkClient;
 import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
@@ -65,6 +66,8 @@ public class CoreLindenCluster extends LindenCluster {
   private final ShardingStrategy shardingStrategy;
   private LoadingCache<LindenSearchRequest, LindenResult> cache;
   private int clusterFutureAwaitTimeout;
+  private static final String SHARD = "shard";
+
 
   public CoreLindenCluster(LindenConfig lindenConf, ShardingStrategy shardingStrategy,
                            LindenService.ServiceIface localClient) {
@@ -373,10 +376,15 @@ public class CoreLindenCluster extends LindenCluster {
     List<Future<BoxedUnit>> futures = new ArrayList<>();
     List<String> hosts = new ArrayList<>();
     final StringBuilder errorInfo = new StringBuilder();
+    JSONObject jsonCmd = JSONObject.parseObject(command);
+    Integer shardId = jsonCmd.getInteger(SHARD);
     for (final Map.Entry<Integer, ShardClient> entry : clients.entrySet()) {
       ShardClient shardClient = entry.getValue();
+      if (shardId != null && shardId != shardClient.getShardId()) {
+        continue;
+      }
       if (shardClient.isAvailable()) {
-        final List<Map.Entry<String, Future<Response>>> hostFuturePairs = shardClient.executeCommand(command);
+        final List<Map.Entry<String, Future<Response>>> hostFuturePairs = shardClient.executeCommand(jsonCmd);
         for (final Map.Entry<String, Future<Response>> hostFuturePair : hostFuturePairs) {
           hosts.add(hostFuturePair.getKey());
           futures.add(hostFuturePair.getValue().transformedBy(new FutureTransformer<Response, BoxedUnit>() {

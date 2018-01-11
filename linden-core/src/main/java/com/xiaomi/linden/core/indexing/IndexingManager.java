@@ -71,11 +71,11 @@ abstract public class IndexingManager<T> {
     try {
       Response response = lindenCore.index(indexRequest);
       if (!response.isSuccess()) {
-        LOGGER.error("Handle index request failed : type={}, {}", indexRequest.getType(), indexRequest,
+        LOGGER.error("Handle index request failed: type={}, {}", indexRequest.getType(), indexRequest,
                      response.getError());
       }
     } catch (Exception e) {
-      LOGGER.error("Handle index request failed : {} - {}", indexRequest, Throwables.getStackTraceAsString(e));
+      LOGGER.error("Handle index request failed: {}, {}", indexRequest, Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -121,6 +121,10 @@ abstract public class IndexingManager<T> {
     public void run() {
       while (true) {
         try {
+          if (lindenCore.isIndexingManagerPaused()) {
+            Thread.sleep(500);
+            continue;
+          }
           T data = provider.next();
           if (data == null) {
             Thread.sleep(500);
