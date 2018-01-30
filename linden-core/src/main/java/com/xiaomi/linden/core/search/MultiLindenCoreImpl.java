@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Throwables;
 import com.twitter.util.Duration;
 import com.twitter.util.Future;
@@ -101,7 +100,9 @@ public class MultiLindenCoreImpl extends LindenCore {
   }
 
   private File[] getIndexDirectories() {
-    File[] files = new File(baseIndexDir).listFiles(new PrefixNameFileFilter(MultiIndexStrategy.MULTI_INDEX_PREFIX_NAME));
+    File[]
+        files =
+        new File(baseIndexDir).listFiles(new PrefixNameFileFilter(MultiIndexStrategy.MULTI_INDEX_PREFIX_NAME));
     if (files != null && files.length > 0) {
       FileNameUtils.sort(files, -1);
     }
@@ -348,10 +349,12 @@ public class MultiLindenCoreImpl extends LindenCore {
     int docsNum = 0;
     LindenServiceInfo serviceInfo = new LindenServiceInfo();
     List<String> indexNames = new ArrayList<>();
+    List<Integer> segmentNums = new ArrayList<>();
     for (Map.Entry<String, LindenCore> entry : lindenCoreMap.entrySet()) {
       serviceInfo = entry.getValue().getServiceInfo();
       docsNum += serviceInfo.getDocsNum();
       indexNames.add(entry.getKey());
+      segmentNums.add(serviceInfo.getSegmentNums().get(0));
     }
     List<String> paths = new ArrayList<>();
     if (baseIndexDir != null) {
@@ -361,7 +364,8 @@ public class MultiLindenCoreImpl extends LindenCore {
       paths.add(config.getLogPath());
     }
     List<FileDiskUsageInfo> fileUsedInfos = RuntimeInfoUtils.getRuntimeFileInfo(paths);
-    serviceInfo.setDocsNum(docsNum).setIndexNames(indexNames).setFileUsedInfos(fileUsedInfos);
+    serviceInfo.setDocsNum(docsNum).setIndexNames(indexNames).setFileUsedInfos(fileUsedInfos)
+        .setSegmentNums(segmentNums);
     return serviceInfo;
   }
 

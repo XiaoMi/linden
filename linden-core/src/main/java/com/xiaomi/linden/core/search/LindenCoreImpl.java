@@ -308,8 +308,19 @@ public class LindenCoreImpl extends LindenCore {
       paths.add(config.getLogPath());
     }
     List<FileDiskUsageInfo> fileDiskUsageInfos = RuntimeInfoUtils.getRuntimeFileInfo(paths);
+    SearcherTaxonomyManager.SearcherAndTaxonomy searcherAndTaxonomy = lindenNRTSearcherManager.acquire();
+    int segmentNum;
+    try {
+      segmentNum = searcherAndTaxonomy.searcher.getIndexReader().leaves().size();
+    } catch (Exception e) {
+      throw new IOException(e);
+    } finally {
+      lindenNRTSearcherManager.release(searcherAndTaxonomy);
+    }
+    List<Integer> segmentNums = new ArrayList<>();
+    segmentNums.add(segmentNum);
     return new LindenServiceInfo().setDocsNum(docNum).setJvmInfo(RuntimeInfoUtils.getJVMInfo())
-        .setFileUsedInfos(fileDiskUsageInfos);
+        .setFileUsedInfos(fileDiskUsageInfos).setSegmentNums(segmentNums);
   }
 
   @Override

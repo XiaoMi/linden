@@ -123,4 +123,5 @@ struct LindenServiceInfo {
     3: optional JVMInfo jvmInfo
     4: optional list<string> indexNames,
     5: optional list<FileDiskUsageInfo> fileUsedInfos,
+    6: optional list<i32> segmentNums,
 }
