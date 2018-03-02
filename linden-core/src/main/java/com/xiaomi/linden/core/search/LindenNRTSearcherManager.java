@@ -34,23 +34,40 @@ import com.xiaomi.linden.core.LindenConfig;
 public class LindenNRTSearcherManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LindenNRTSearcherManager.class);
-  private static final int DEFAULT_THREAD_POOL_SIZE = 8;
+  private static final int DEFAULT_THREAD_POOL_SIZE = 2 * Runtime.getRuntime().availableProcessors();
   private final ReferenceManager<IndexSearcher> indexSearcherReferenceManager;
   private final ControlledRealTimeReopenThread<IndexSearcher> indexSearcherReopenThread;
   private final ReferenceManager<SearcherTaxonomyManager.SearcherAndTaxonomy> searcherAndTaxonomyReferenceManager;
-  private final ControlledRealTimeReopenThread<SearcherTaxonomyManager.SearcherAndTaxonomy> searcherAndTaxonomyReopenThread;
+  private final ControlledRealTimeReopenThread<SearcherTaxonomyManager.SearcherAndTaxonomy>
+      searcherAndTaxonomyReopenThread;
   private ExecutorService executor;
+  private final Thread checkupThread;
 
 
   public LindenNRTSearcherManager(LindenConfig config,
-      TrackingIndexWriter trackingIndexWriter,
-      DirectoryTaxonomyWriter taxonomyWriter) throws IOException {
+                                  TrackingIndexWriter trackingIndexWriter,
+                                  DirectoryTaxonomyWriter taxonomyWriter) throws IOException {
     SearcherFactory searcherFactory = null;
     if (config.isEnableParallelSearch()) {
       executor = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE);
       searcherFactory = new ParallelSearcherFactory(executor);
     }
     LOGGER.info("Parallel search enabled : {}", config.isEnableParallelSearch());
+
+    checkupThread = new Thread() {
+      @Override
+      public void run() {
+        while (true) {
+          try {
+            Thread.sleep(30000);
+            LOGGER.info("Index searcher parallel thread pool executor status:" + executor);
+          } catch (Exception e) {
+            // do nothing
+          }
+        }
+      }
+    };
+    checkupThread.start();
 
     if (taxonomyWriter != null) {
       indexSearcherReferenceManager = null;
@@ -65,12 +82,12 @@ public class LindenNRTSearcherManager {
       searcherAndTaxonomyReopenThread.start();
     } else {
       indexSearcherReferenceManager = new SearcherManager(trackingIndexWriter.getIndexWriter(),
-          true, searcherFactory);
+                                                          true, searcherFactory);
       indexSearcherReopenThread =
           new ControlledRealTimeReopenThread<>(trackingIndexWriter,
-              indexSearcherReferenceManager,
-              config.getIndexRefreshTime(),   // when there is nobody waiting
-              0.1);    // when there is someone waiting
+                                               indexSearcherReferenceManager,
+                                               config.getIndexRefreshTime(),   // when there is nobody waiting
+                                               0.1);    // when there is someone waiting
       searcherAndTaxonomyReferenceManager = null;
       searcherAndTaxonomyReopenThread = null;
       indexSearcherReopenThread.start();
@@ -107,6 +124,7 @@ public class LindenNRTSearcherManager {
       indexSearcherReopenThread.close();
       indexSearcherReferenceManager.close();
     }
+    checkupThread.interrupt();
     executor.shutdown();
   }
 }
