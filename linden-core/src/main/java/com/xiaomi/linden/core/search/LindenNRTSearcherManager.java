@@ -34,7 +34,6 @@ import com.xiaomi.linden.core.LindenConfig;
 public class LindenNRTSearcherManager {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(LindenNRTSearcherManager.class);
-  private static final int DEFAULT_THREAD_POOL_SIZE = 2 * Runtime.getRuntime().availableProcessors();
   private final ReferenceManager<IndexSearcher> indexSearcherReferenceManager;
   private final ControlledRealTimeReopenThread<IndexSearcher> indexSearcherReopenThread;
   private final ReferenceManager<SearcherTaxonomyManager.SearcherAndTaxonomy> searcherAndTaxonomyReferenceManager;
@@ -49,7 +48,7 @@ public class LindenNRTSearcherManager {
                                   DirectoryTaxonomyWriter taxonomyWriter) throws IOException {
     SearcherFactory searcherFactory = null;
     if (config.isEnableParallelSearch()) {
-      executor = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE);
+      executor = Executors.newFixedThreadPool(config.getIndexSearcherParallelThreadNum());
       searcherFactory = new ParallelSearcherFactory(executor);
     }
     LOGGER.info("Parallel search enabled : {}", config.isEnableParallelSearch());
@@ -57,10 +56,12 @@ public class LindenNRTSearcherManager {
     checkupThread = new Thread() {
       @Override
       public void run() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
           try {
             Thread.sleep(30000);
             LOGGER.info("Index searcher parallel thread pool executor status:" + executor);
+          } catch (InterruptedException e) {
+            break;
           } catch (Exception e) {
             // do nothing
           }

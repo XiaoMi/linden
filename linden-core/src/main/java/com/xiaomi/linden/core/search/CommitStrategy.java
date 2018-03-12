@@ -75,8 +75,9 @@ public class CommitStrategy extends Thread {
   public void close() {
     interrupt();
     try {
-      join();
-    } catch (InterruptedException e) {
+      // wait 1 minute
+      join(60000);
+    } catch (Exception e) {
       // do nothing
     }
   }

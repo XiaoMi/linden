@@ -154,7 +154,7 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
     checkupThread = new Thread() {
       @Override
       public void run() {
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
           try {
             Thread.sleep(30000);
             LOGGER.info("Cluster thread pool executor status:" + clusterThreadPoolExecutor);
@@ -167,6 +167,8 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
               CacheInfo cacheInfo = lindenCluster.getCacheInfo();
               LOGGER.info("Linden cache stats: " + cacheInfo);
             }
+          } catch (InterruptedException e) {
+            break;
           } catch (Exception e) {
             // do nothing
           }

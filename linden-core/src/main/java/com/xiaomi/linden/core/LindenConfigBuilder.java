@@ -57,6 +57,8 @@ public class LindenConfigBuilder {
   public static final String INDEX_MANAGER_THREAD_NUM = "index.manager.thread.num";
   public static final String SEARCH_THREAD_POOL_JSON_CONFIG = "search.thread.pool.json.config";
   public static final String ENABLE_SOURCE_FIELD_CACHE = "enable.source.field.cache";
+  public static final String INDEX_SEARCHER_PARALLEL_THREAD_NUM = "index.searcher.parallel.thread.num";
+
 
   protected static class FieldInfo {
 
@@ -116,6 +118,8 @@ public class LindenConfigBuilder {
     fieldMap.put(INDEX_MANAGER_THREAD_NUM, new FieldInfo("IndexManagerThreadNum", int.class));
     fieldMap.put(SEARCH_THREAD_POOL_JSON_CONFIG, new FieldInfo("SearchThreadPoolConfig", String.class));
     fieldMap.put(ENABLE_SOURCE_FIELD_CACHE, new FieldInfo("EnableSourceFieldCache", boolean.class));
+    fieldMap.put(INDEX_SEARCHER_PARALLEL_THREAD_NUM, new FieldInfo("IndexSearcherParallelThreadNum", int.class));
+
   }
 
   public static LindenConfig build(File confFile) throws Exception {

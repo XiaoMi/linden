@@ -184,6 +184,7 @@ public class HotSwapLindenCoreImpl extends LindenCore {
         String newIndexName = indexName.replaceFirst(NEXT_INDEX_NAME_PREFIX, CURRENT_INDEX_NAME_PREFIX);
         String destDir = FilenameUtils.concat(baseIndexDir, newIndexName);
         FileUtils.moveDirectory(new File(dir), new File(destDir));
+        LOGGER.info("Move " + dir + " directory to " + destDir);
         nextCore = getLindenCore(newIndexName);
         // swap
         String lastIndexName = currentIndexName;
@@ -232,6 +233,7 @@ public class HotSwapLindenCoreImpl extends LindenCore {
       try {
         response = swapIndex(request.getIndexName());
       } catch (Exception e) {
+        LOGGER.error("Swapping index " + request.getIndexName() + " failed, " + e);
         throw new IOException("Swapping index " + request.getIndexName() + " failed!", e);
       }
       return response;

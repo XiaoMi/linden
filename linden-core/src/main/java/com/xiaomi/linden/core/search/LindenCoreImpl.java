@@ -57,6 +57,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NRTCachingDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xiaomi.linden.core.LindenConfig;
 import com.xiaomi.linden.core.LindenDocumentBuilder;
@@ -84,6 +86,7 @@ import com.xiaomi.linden.util.ResponseUtils;
 
 public class LindenCoreImpl extends LindenCore {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(LindenCoreImpl.class);
   private final LindenConfig config;
   private final LindenNRTSearcherManager lindenNRTSearcherManager;
   private final TrackingIndexWriter trackingIndexWriter;
@@ -289,12 +292,17 @@ public class LindenCoreImpl extends LindenCore {
 
   @Override
   public void close() throws IOException {
+    LOGGER.info("Closing linden core");
     commitStrategy.close();
+    LOGGER.info("commitStrategy closed");
     indexWriter.close();
+    LOGGER.info("indexWriter closed");
     if (taxoWriter != null) {
       taxoWriter.close();
+      LOGGER.info("taxoWriter closed");
     }
     lindenNRTSearcherManager.close();
+    LOGGER.info("lindenNRTSearcherManager closed");
   }
 
   @Override

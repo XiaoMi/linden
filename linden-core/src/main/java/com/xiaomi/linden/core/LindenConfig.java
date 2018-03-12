@@ -91,6 +91,7 @@ public class LindenConfig {
   private int indexManagerThreadNum;
   private String searchThreadPoolConfig;
   private boolean enableSourceFieldCache;
+  private int indexSearcherParallelThreadNum;
   private String lindenWarmerFactory;
 
   private Map<String, LindenFieldSchema> fieldSchemaMap = new HashMap<>();
@@ -113,6 +114,7 @@ public class LindenConfig {
     this.searchTimeLimit = -1;
     this.indexManagerThreadNum = 11;
     this.enableSourceFieldCache = false;
+    this.indexSearcherParallelThreadNum = 2 * Runtime.getRuntime().availableProcessors();
   }
 
   public void putToProperties(String key, String val) {
@@ -410,6 +412,15 @@ public class LindenConfig {
 
   public LindenConfig setEnableSourceFieldCache(boolean enableSourceFieldCache) {
     this.enableSourceFieldCache = enableSourceFieldCache;
+    return this;
+  }
+
+  public int getIndexSearcherParallelThreadNum() {
+    return this.indexSearcherParallelThreadNum;
+  }
+
+  public LindenConfig setIndexSearcherParallelThreadNum(int indexSearcherParallelThreadNum) {
+    this.indexSearcherParallelThreadNum = indexSearcherParallelThreadNum;
     return this;
   }
 
