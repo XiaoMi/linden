@@ -182,13 +182,13 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
   private static ThreadPoolExecutor buildThreadPoolExecutor(JSONObject threadConfig) {
     int availableProcessors = Runtime.getRuntime().availableProcessors();
     if (threadConfig == null) {
-      int min = availableProcessors;
+      int min = 2 * availableProcessors;
       int max = 2 * availableProcessors;
       return new ThreadPoolExecutor(min, max, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(500),
                                     new ThreadPoolExecutor.DiscardOldestPolicy());
     }
-    int min = threadConfig.containsKey("min") ? threadConfig.getInteger("min") : 2 * availableProcessors + 1;
-    int max = threadConfig.containsKey("max") ? threadConfig.getInteger("max") : 3 * availableProcessors + 1;
+    int min = threadConfig.containsKey("min") ? threadConfig.getInteger("min") : availableProcessors;
+    int max = threadConfig.containsKey("max") ? threadConfig.getInteger("max") : 3 * availableProcessors;
     min = Math.max(min, 1);
     max = Math.min(max, 6 * availableProcessors);
     min = Math.min(min, max);
