@@ -104,7 +104,7 @@ public class MultiLindenCoreImpl extends LindenCore {
         files =
         new File(baseIndexDir).listFiles(new PrefixNameFileFilter(MultiIndexStrategy.MULTI_INDEX_PREFIX_NAME));
     if (files != null && files.length > 0) {
-      FileNameUtils.sort(files, -1);
+      FileNameUtils.sortByNameDesc(files);
     }
     return files;
   }

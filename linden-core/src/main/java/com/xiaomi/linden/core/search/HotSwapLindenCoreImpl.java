@@ -50,10 +50,12 @@ public class HotSwapLindenCoreImpl extends LindenCore {
   private static final String LINDEN = "linden";
   private static final String CURRENT_INDEX_NAME_PREFIX = "current_";
   private static final String NEXT_INDEX_NAME_PREFIX = "next_";
+  private static final String EXPIRED_INDEX_NAME_PREFIX = "expired_";
   private static final int MAX_NEXT_INDEX_NUM = 3;
+  private static final int MAX_EXPIRED_INDEX_NUM = 3;
   private LindenCore currentLindenCore;
   private String currentIndexName;
-  private String currentIndexTimeStamp;
+  private String currentIndexVersion;
   private final Map<String, LindenCore> lindenCoreMap = new ConcurrentHashMap<>();
   private final LindenConfig lindenConfig;
   private String baseIndexDir;
@@ -71,7 +73,7 @@ public class HotSwapLindenCoreImpl extends LindenCore {
         LOGGER.info("Create empty current index " + currentIndexName);
       }
       currentLindenCore = getLindenCore(currentIndexName);
-      currentIndexTimeStamp = currentIndexName.substring(CURRENT_INDEX_NAME_PREFIX.length());
+      currentIndexVersion = currentIndexName.substring(CURRENT_INDEX_NAME_PREFIX.length());
 
       files = getIndexDirectories(NEXT_INDEX_NAME_PREFIX);
       if (files != null && files.length > 0) {
@@ -86,14 +88,14 @@ public class HotSwapLindenCoreImpl extends LindenCore {
     } else {
       currentIndexName = CURRENT_INDEX_NAME_PREFIX + System.currentTimeMillis();
       currentLindenCore = getLindenCore(currentIndexName);
-      currentIndexTimeStamp = currentIndexName.substring(CURRENT_INDEX_NAME_PREFIX.length());
+      currentIndexVersion = currentIndexName.substring(CURRENT_INDEX_NAME_PREFIX.length());
     }
   }
 
   private File[] getIndexDirectories(final String prefix) {
     File[] files = new File(baseIndexDir).listFiles(new PrefixNameFileFilter(prefix));
     if (files != null && files.length > 0) {
-      FileNameUtils.sort(files, -1);
+      FileNameUtils.sortByNameDesc(files);
     }
     return files;
   }
@@ -170,8 +172,8 @@ public class HotSwapLindenCoreImpl extends LindenCore {
       throw new IOException("Invalid index name: " + indexName);
     }
     // May receive swap request more than one times
-    String nextIndexTimeStamp = indexName.substring(NEXT_INDEX_NAME_PREFIX.length());
-    if (!currentIndexTimeStamp.equals(nextIndexTimeStamp)) {
+    String nextIndexVersion = indexName.substring(NEXT_INDEX_NAME_PREFIX.length());
+    if (!currentIndexVersion.equals(nextIndexVersion)) {
       LOGGER.info("Begin swapping index " + indexName);
       if (!lindenCoreMap.containsKey(indexName)) {
         LOGGER.error("No index found for: " + indexName);
@@ -188,9 +190,10 @@ public class HotSwapLindenCoreImpl extends LindenCore {
         nextCore = getLindenCore(newIndexName);
         // swap
         String lastIndexName = currentIndexName;
+        String lastIndexVersion = currentIndexVersion;
         currentLindenCore = nextCore;
         currentIndexName = newIndexName;
-        currentIndexTimeStamp = nextIndexTimeStamp;
+        currentIndexVersion = nextIndexVersion;
 
         // remove last core from map
         LindenCore lastCore = lindenCoreMap.remove(lastIndexName);
@@ -198,8 +201,16 @@ public class HotSwapLindenCoreImpl extends LindenCore {
         lastCore.close();
         // mark last core expired
         dir = FilenameUtils.concat(baseIndexDir, lastIndexName);
-        FileUtils.deleteQuietly(new File(dir));
-        LOGGER.info("Expire and delete index: " + lastIndexName);
+        destDir = FilenameUtils.concat(baseIndexDir, EXPIRED_INDEX_NAME_PREFIX + lastIndexVersion);
+        FileUtils.moveDirectory(new File(dir), new File(destDir));
+        LOGGER.info("Expire index: " + lastIndexName);
+
+        File[] files = getIndexDirectories(EXPIRED_INDEX_NAME_PREFIX);
+        if (files != null && files.length > MAX_EXPIRED_INDEX_NUM) {
+          File oldestExpiredIndexDir = files[files.length - 1];
+          FileUtils.deleteQuietly(oldestExpiredIndexDir);
+          LOGGER.info("Delete expired index: " + oldestExpiredIndexDir.getName());
+        }
       } else {
         // RAM type
         // swap
@@ -244,7 +255,7 @@ public class HotSwapLindenCoreImpl extends LindenCore {
       if (indexName.startsWith(NEXT_INDEX_NAME_PREFIX)) {
         // Accept bootstrap index request after swap is done in case something unexpected happened
         // that swap command is executed before bootstrap is done
-        if (!indexName.substring(NEXT_INDEX_NAME_PREFIX.length()).equals(currentIndexTimeStamp)) {
+        if (!indexName.substring(NEXT_INDEX_NAME_PREFIX.length()).equals(currentIndexVersion)) {
           core = getLindenCore(indexName);
         }
       } else {

@@ -254,7 +254,7 @@ public class TestHotSwapLindenCore {
     Assert.assertEquals(103, lindenCore.getServiceInfo().getDocsNum());
 
     Assert.assertEquals(1, lindenCore.getServiceInfo().getFileUsedInfosSize());
-    Assert.assertEquals(20, lindenCore.getServiceInfo().getFileUsedInfos().get(0).getDiskUsage() /1024);
+    Assert.assertEquals(44, lindenCore.getServiceInfo().getFileUsedInfos().get(0).getDiskUsage() /1024);
 
     // bootstrap after swap is done
     for (int i = 103; i < 200; ++i) {

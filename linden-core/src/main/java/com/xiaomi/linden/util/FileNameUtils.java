@@ -20,16 +20,14 @@ import java.util.Comparator;
 
 public class FileNameUtils {
 
-  public static void sort(File[] files, final int seq) {
-    if (files != null && files.length > 1) {
-      Arrays.sort(files, new Comparator<File>() {
-        @Override
-        public int compare(File o1, File o2) {
-          String fileName1 = o1.getName();
-          String fileName2 = o2.getName();
-          return seq * fileName1.compareTo(fileName2);
-        }
-      });
-    }
+  public static void sortByNameDesc(File[] files) {
+    Arrays.sort(files, new Comparator<File>() {
+      @Override
+      public int compare(File o1, File o2) {
+        String fileName1 = o1.getName();
+        String fileName2 = o2.getName();
+        return fileName2.compareTo(fileName1);
+      }
+    });
   }
 }
