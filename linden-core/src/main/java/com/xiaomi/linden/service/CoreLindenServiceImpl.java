@@ -221,21 +221,29 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
       @Override
       public LindenResult apply() {
         LindenResult result = null;
+        String logTag = null;
         try {
           long eps = sw.elapsed(TimeUnit.MILLISECONDS);
           if (eps > 10) {
             LOGGER.warn("Warning: instanceExecutorPool took " + eps + "ms to start search.");
             if (eps > instanceFuturePoolWaitTimeout) {
               result = buildLindenFailedResult("Waiting time is too long, " + eps + "ms in instance future pool");
+              logTag = "instancePoolWaitTimeout";
               return result;
             }
           }
           result = lindenCore.search(request);
-          return result;
+          if (result.isSuccess()) {
+            logTag = "instanceSearch";
+          } else {
+            logTag = "instanceFailureSearch";
+          }
         } catch (Exception e) {
           String errorStackInfo = Throwables.getStackTraceAsString(e);
           result = buildLindenFailedResult(errorStackInfo);
+          logTag = "instanceExceptionalSearch";
         } finally {
+          metricsManager.time(sw.elapsed(TimeUnit.NANOSECONDS), logTag);
           result.setCost((int) sw.elapsed(TimeUnit.MILLISECONDS));
           if (result.isSuccess()) {
             LOGGER.info("Instance search request succeeded, request: {}, hits: {}, cost: {} ms.", request,
@@ -528,6 +536,7 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
             LOGGER.warn("Warning: clusterExecutorPool took " + eps + "ms to start handleClusterBqlRequest.");
             if (eps > clusterFuturePoolWaitTimeout) {
               result = buildLindenFailedResult("Waiting time is too long, " + eps + "ms in cluster future pool");
+              logTag = "poolWaitTimeout";
               return result;
             }
           }

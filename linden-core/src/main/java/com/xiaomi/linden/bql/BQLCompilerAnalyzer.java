@@ -52,7 +52,6 @@ import com.xiaomi.linden.thrift.common.LindenFacetDimAndPath;
 import com.xiaomi.linden.thrift.common.LindenFacetParam;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
 import com.xiaomi.linden.thrift.common.LindenFilter;
-import com.xiaomi.linden.thrift.common.LindenFilteredQuery;
 import com.xiaomi.linden.thrift.common.LindenFlexibleQuery;
 import com.xiaomi.linden.thrift.common.LindenInputParam;
 import com.xiaomi.linden.thrift.common.LindenMatchAllQuery;
@@ -1341,9 +1340,15 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
     }
     // key route param
     if (ctx.route_replica_clause() != null) {
-      routeParam.setReplicaRouteKey((String) valProperty.get(ctx.route_replica_clause()));
+      String replicaKey = (String) valProperty.get(ctx.route_replica_clause());
+      if (replicaKey != null) {
+        routeParam.setReplicaRouteKey(replicaKey);
+      }
     }
-    valProperty.put(ctx, routeParam);
+
+    if (routeParam.isSetShardParams() || routeParam.isSetReplicaRouteKey()) {
+      valProperty.put(ctx, routeParam);
+    }
   }
 
   @Override
@@ -1370,6 +1375,9 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
   @Override
   public void exitRoute_replica_clause(BQLParser.Route_replica_clauseContext ctx) {
     String key = unescapeStringLiteral(ctx.STRING_LITERAL());
+    if (isIgnore(key)) {
+      return;
+    }
     valProperty.put(ctx, key);
   }
 

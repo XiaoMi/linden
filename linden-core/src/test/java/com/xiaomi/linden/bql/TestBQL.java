@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xiaomi.linden.core.search.query.FilteredQueryConstructor;
 import com.xiaomi.linden.thrift.builder.filter.LindenBooleanFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenNotNullFieldFilterBuilder;
 import com.xiaomi.linden.thrift.builder.filter.LindenRangeFilterBuilder;
@@ -43,10 +42,8 @@ import com.xiaomi.linden.thrift.common.LindenFacetDimAndPath;
 import com.xiaomi.linden.thrift.common.LindenFacetParam;
 import com.xiaomi.linden.thrift.common.LindenFieldSchema;
 import com.xiaomi.linden.thrift.common.LindenFilter;
-import com.xiaomi.linden.thrift.common.LindenFilteredQuery;
 import com.xiaomi.linden.thrift.common.LindenFlexibleQuery;
 import com.xiaomi.linden.thrift.common.LindenInputParam;
-import com.xiaomi.linden.thrift.common.LindenNotNullFieldFilter;
 import com.xiaomi.linden.thrift.common.LindenQuery;
 import com.xiaomi.linden.thrift.common.LindenQueryFilter;
 import com.xiaomi.linden.thrift.common.LindenRange;
@@ -718,6 +715,10 @@ public class TestBQL {
     String bql = "select * from linden where title = 'sed' route by replica_key 'nihao'";
     LindenSearchRequest request = compiler.compile(bql).getSearchRequest();
     Assert.assertEquals("nihao", request.getRouteParam().getReplicaRouteKey());
+
+    bql = "select * from linden where title = 'sed' route by replica_key '$replicaKey'";
+    request = compiler.compile(bql).getSearchRequest();
+    Assert.assertFalse(request.isSetRouteParam());
   }
 
   @Test
