@@ -29,6 +29,7 @@ public class CommitStrategy extends Thread {
   // flush interval 5mins
   private long maxInterval = 300000;
   private int docsNumDiffLimit = 50000;
+  private volatile boolean stop = false;
 
   public CommitStrategy(IndexWriter indexWriter, DirectoryTaxonomyWriter taxoWriter) {
     this.indexWriter = indexWriter;
@@ -39,7 +40,7 @@ public class CommitStrategy extends Thread {
   public void run() {
     int lastDocsNum = indexWriter.numDocs();
     long lastTime = System.currentTimeMillis();
-    while (!Thread.currentThread().isInterrupted()) {
+    while (!stop) {
       try {
         Thread.sleep(1000);
         if (Math.abs(indexWriter.numDocs() - lastDocsNum) > docsNumDiffLimit
@@ -56,6 +57,7 @@ public class CommitStrategy extends Thread {
           LOGGER.info("Commit took {}ms", lastTime - commitTime);
         }
       } catch (InterruptedException e) {
+        LOGGER.info("Commit thread is interrupted");
         break;
       } catch (Exception e) {
         LOGGER.error("Commit exception: {}", Throwables.getStackTraceAsString(e));
@@ -73,12 +75,13 @@ public class CommitStrategy extends Thread {
   }
 
   public void close() {
-    interrupt();
+    stop = true;
     try {
-      // wait 1 minute
-      join(60000);
+      // wait 2 minutes
+      join(120000);
     } catch (Exception e) {
-      // do nothing
+      interrupt();
+      LOGGER.error("Interrupt commit thread");
     }
   }
 }
