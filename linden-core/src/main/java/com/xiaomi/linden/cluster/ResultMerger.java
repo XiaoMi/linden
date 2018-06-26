@@ -133,12 +133,17 @@ public class ResultMerger {
         String groupName = subGroup.getFields().get(groupField);
         boolean isFound = false;
         //find the group in the merged groupList
-        for (LindenHit mergedHit : mergedResult.getHits()) {
+        for (int j = 0; j < mergedResult.getHitsSize(); ++j) {
+          LindenHit mergedHit = mergedResult.getHits().get(j);
           if (mergedHit.getFields().get(groupField).equals(groupName)) {
             Iterable<LindenHit> groupIterable = Iterables.mergeSorted(
                 ImmutableList.of(subGroup.getGroupHits(), mergedHit.getGroupHits()), new LindenHitCmp(null));
-            mergedHit.setGroupHits(Lists.newArrayList(Iterables.limit(groupIterable, innerLimit)));
-            mergedHit.setScore(Math.max(mergedHit.score, subGroup.score));
+            List<LindenHit> hits = Lists.newArrayList(Iterables.limit(groupIterable, innerLimit));
+            if (mergedHit.getScore() < subGroup.getScore()) {
+              mergedHit = subGroup;
+            }
+            mergedHit.setGroupHits(hits);
+            mergedResult.getHits().set(j, mergedHit);
             isFound = true;
             break;
           }

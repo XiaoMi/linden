@@ -111,17 +111,17 @@ public class TestResultMerger {
   }
 
 
-  private LindenHit buildGroup(String groupName, int shardId) {
+  private LindenHit buildGroup(String groupName, int base) {
     LindenHit group = new LindenHit();
     //5 elements in a group
     List<LindenHit> docs = new ArrayList<>();
     group.setGroupHits(docs);
     for (int i = 0; i < 5; ++i) {
-      docs.add(new LindenHit(shardId + "_" + (5 - i), 5 - i + shardId));
+      docs.add(new LindenHit(base + "_" + (5 - i), 5 - i + base));
     }
     group.setFields(new HashMap<String,String>());
     group.getFields().put("group_name", groupName);
-    group.setScore(5 + shardId);
+    group.setScore(5 + base);
     return group;
   }
 
@@ -137,16 +137,19 @@ public class TestResultMerger {
 
     for (int i = 0; i < 4; ++i) {
       result1.addToHits(buildGroup("group" + i, i));
-      result2.addToHits(buildGroup("group" + i, i));
-      result3.addToHits(buildGroup("group" + i, i));
+      result2.addToHits(buildGroup("group" + i, i + 1));
+      result3.addToHits(buildGroup("group" + i, i + 2));
     }
 
-    result1.setTotalHits(4*5);
+    result1.setTotalHits(30);
     result1.setTotalGroups(4);
-    result2.setTotalHits(4 * 5);
+    result1.setTotalGroupHits(20);
+    result2.setTotalHits(30);
     result2.setTotalGroups(4);
-    result3.setTotalHits(4 * 5);
+    result2.setTotalGroupHits(20);
+    result3.setTotalHits(30);
     result3.setTotalGroups(4);
+    result3.setTotalGroupHits(20);
 
     List<LindenResult> resultList = new ArrayList<>();
     resultList.add(result1);
@@ -159,20 +162,16 @@ public class TestResultMerger {
     searchRequest.setGroupParam(groupParam);
 
     LindenResult result = ResultMerger.merge(searchRequest, resultList);
-    Assert.assertEquals(20*3, result.getTotalHits());
+    Assert.assertEquals(90, result.getTotalHits());
+    Assert.assertEquals(60, result.getTotalGroupHits());
     Assert.assertEquals(4, result.getTotalGroups());
     Assert.assertEquals(4, result.getHitsSize());
     List<LindenHit> groups = result.getHits();
-    //Assert.assertEquals("group3", groups.get(0).getFields().get("group_name"));
-    Assert.assertEquals(8f, groups.get(0).score, DELTA);
-    Assert.assertEquals(8f, groups.get(0).getGroupHits().get(0).score, DELTA);
+    Assert.assertEquals("group3", groups.get(0).getFields().get("group_name"));
+    Assert.assertEquals(10f, groups.get(0).score, DELTA);
+    Assert.assertEquals(10f, groups.get(0).getGroupHits().get(0).score, DELTA);
     Assert.assertEquals(10, groups.get(0).getGroupHitsSize());
-    //Assert.assertEquals("group2", groups.get(1).getFields().get("group_name"));
-    Assert.assertEquals(7f, groups.get(1).getGroupHits().get(0).score, DELTA);
-
-    //searchRequest.setFrom(1);
-    //result = ResultMerger.merge(searchRequest, resultList);
-    //groups = result.getHits();
-    //Assert.assertEquals("group2", groups.get(0).getFields().get("group_name"));
+    Assert.assertEquals("group2", groups.get(1).getFields().get("group_name"));
+    Assert.assertEquals(9f, groups.get(1).getGroupHits().get(0).score, DELTA);
   }
 }
