@@ -83,7 +83,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":33.5,\"field1\":\"ccc_c\",\"id\":\"3\",\"rank\":4.5,\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
+        "{\"field1\":\"ccc_c\",\"cat2\":33.5,\"cat1\":3,\"rank\":4.5,\"id\":\"3\",\"title\":\"lucene 3\",\"tagstr\":\"ok\"}",
         result.getHits().get(0).getSource());
 
     // this case won't go docvalue path, since tagstr is not only docvalue but also indexed
@@ -94,7 +94,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     result = lindenCore.search(request);
     Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":33.5,\"field1\":\"ccc_c\",\"id\":\"3\",\"rank\":4.5,\"tagstr\":\"not ok\",\"title\":\"lucene 3\"}",
+        "{\"field1\":\"ccc_c\",\"cat2\":33.5,\"cat1\":3,\"rank\":4.5,\"id\":\"3\",\"title\":\"lucene 3\",\"tagstr\":\"not ok\"}",
         result.getHits().get(0).getSource());
   }
 
@@ -110,7 +110,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     LindenResult result = lindenCore.search(request);
     Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":3.5,\"field1\":\"ccc\",\"id\":\"3\",\"rank\":4.5,\"tagnum\":[10],\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
+        "{\"field1\":\"ccc\",\"cat2\":3.5,\"tagnum\":[10],\"cat1\":3,\"rank\":4.5,\"id\":\"3\",\"title\":\"lucene 3\",\"tagstr\":\"ok\"}",
         result.getHits().get(0).getSource());
 
     handleRequest("{\"type\": \"update\", \"content\": {\"id\":3, \"tagnum\":[6,7]}}");
@@ -119,7 +119,7 @@ public class TestLindenUpdate extends TestLindenCoreBase {
     result = lindenCore.search(request);
     Assert.assertEquals(1, result.getHitsSize());
     Assert.assertEquals(
-        "{\"cat1\":3,\"cat2\":3.5,\"field1\":\"ccc\",\"id\":\"3\",\"rank\":4.5,\"tagnum\":[6,7],\"tagstr\":\"ok\",\"title\":\"lucene 3\"}",
+        "{\"field1\":\"ccc\",\"cat2\":3.5,\"tagnum\":[6,7],\"cat1\":3,\"rank\":4.5,\"id\":\"3\",\"title\":\"lucene 3\",\"tagstr\":\"ok\"}",
         result.getHits().get(0).getSource());
   }
 
