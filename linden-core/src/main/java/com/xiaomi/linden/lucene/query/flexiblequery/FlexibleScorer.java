@@ -143,11 +143,6 @@ public class FlexibleScorer extends Scorer {
   }
 
   private void clear() {
-    for (int i = 0; i < matchedInfoMatrix.getFieldLength(); ++i) {
-      for (int j = 0; j < matchedInfoMatrix.getTermLength(); ++j) {
-        matchedInfoMatrix.get(i, j).clearMatchedInfo();
-      }
-    }
     Arrays.fill(termFieldHit, false);
   }
 

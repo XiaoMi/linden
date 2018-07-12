@@ -66,7 +66,7 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public boolean isMatched(int field, int term) {
-    return termMatchedInfo(field, term).isMatched();
+    return termMatchedInfo(field, term).isMatched(doc());
   }
 
   public float getScore(int field, int term) throws IOException {
@@ -74,11 +74,11 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public float getRawScore(int field, int term) throws IOException {
-    return termMatchedInfo(field, term).score();
+    return termMatchedInfo(field, term).score(doc());
   }
 
   public Explanation explain(int field, int term, Query query) {
-    return termMatchedInfo(field, term).explain(similarity, query);
+    return termMatchedInfo(field, term).explain(similarity, query, doc());
   }
 
   public String field(int field, int term) {
@@ -97,15 +97,15 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
   }
 
   public int freq(int field, int term) {
-    return termMatchedInfo(field, term).freq();
+    return termMatchedInfo(field, term).freq(doc());
   }
 
   public int position(int field, int term) {
-    return termMatchedInfo(field, term).position();
+    return termMatchedInfo(field, term).position(doc());
   }
 
   public List<Integer> positions(int field, int term) {
-    return termMatchedInfo(field, term).positions();
+    return termMatchedInfo(field, term).positions(doc());
   }
 
   public Explanation explain(Similarity similarity, Query query, int doc) throws IOException {
