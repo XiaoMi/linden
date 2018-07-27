@@ -179,10 +179,15 @@ public class FlexibleScorer extends Scorer {
 
     doc = matchedEnumsList[0].doc();
     matchedInfoMatrix.setDoc(doc);
-
+    int matchedTerms = 0;
     while (matchedEnumsList[0].doc() == doc) {
       matchedEnumsList[0].saveMatchedInfo();
-      termFieldHit[matchedEnumsList[0].termPos] = true;
+      int field = matchedEnumsList[0].getField();
+      matchedInfoMatrix.setMatchedField(field);
+      if(!termFieldHit[matchedEnumsList[0].termPos]) {
+        matchedTerms++;
+        termFieldHit[matchedEnumsList[0].termPos] = true;
+      }
       if (matchedEnumsList[0].next()) {
         heapAdjust(0);
       } else {
@@ -192,6 +197,7 @@ public class FlexibleScorer extends Scorer {
         }
       }
     }
+    matchedInfoMatrix.setTotalMatchedTerms(matchedTerms);
     return doc;
   }
 

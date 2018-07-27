@@ -186,7 +186,7 @@ public class FlexibleWeight extends Weight {
       Terms terms = context.reader().terms(fieldTerms[0].term.field());
       if (terms == null) {
         for (int j = 0; j < fieldTerms.length; ++j) {
-          matchedEnumsMatrix[i][j] = new TermDocsEnum(fieldTerms[j], 0, null, null, j);
+          matchedEnumsMatrix[i][j] = new TermDocsEnum(fieldTerms[j], 0, null, null, i, j);
         }
       } else {
         final TermsEnum termsEnum = terms.iterator(null);
@@ -199,16 +199,19 @@ public class FlexibleWeight extends Weight {
           int docFreq = 0;
           if (state != null) {
             termsEnum.seekExact(term.bytes(), state);
-            postings = termsEnum.docsAndPositions(acceptDocs, null, DocsAndPositionsEnum.FLAG_OFFSETS);
+            postings = termsEnum
+                .docsAndPositions(acceptDocs, null, DocsAndPositionsEnum.FLAG_OFFSETS);
             docFreq = termsEnum.docFreq();
           }
-          matchedEnumsMatrix[i][j] = new TermDocsEnum(fieldTerms[j], docFreq, postings, docScorer, j);
+          matchedEnumsMatrix[i][j] = new TermDocsEnum(fieldTerms[j], docFreq, postings, docScorer,
+                                                      i, j);
         }
       }
     }
     FlexibleScoreModelStrategy strategy;
     try {
-      strategy = (FlexibleScoreModelStrategy) LindenScoreModelStrategyBuilder.buildFlexibleQueryStrategy(query);
+      strategy = (FlexibleScoreModelStrategy) LindenScoreModelStrategyBuilder
+          .buildFlexibleQueryStrategy(query);
     } catch (Exception e) {
       throw new IOException(e);
     }

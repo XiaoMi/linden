@@ -42,14 +42,16 @@ public class TermDocsEnum {
   private int matchedPosition = -1;
   private List<Integer> matchedPositions;
   private int matchedFreq = -1;
+  private int field;
 
   public TermDocsEnum(FlexibleQuery.FlexibleTerm term, int docFreq, DocsAndPositionsEnum postings,
-                      Similarity.SimScorer docScorer, int termPos) throws IOException {
+                      Similarity.SimScorer docScorer, int field, int termPos) throws IOException {
     this.doc = -1;
     this.term = term;
     this.postings = postings;
     this.docFreq = docFreq;
     this.docScorer = docScorer;
+    this.field = field;
     this.termPos = termPos;
   }
 
@@ -75,7 +77,7 @@ public class TermDocsEnum {
       return false;
     }
     freq = postings.freq();
-    positions = new ArrayList<>();
+    positions = new ArrayList<>(freq);
     for (int i = 0; i < freq; i++) {
       positions.add(postings.nextPosition());
     }
@@ -133,5 +135,9 @@ public class TermDocsEnum {
     this.matchedPosition = position;
     this.matchedFreq = freq;
     this.matchedPositions = positions;
+  }
+
+  public int getField() {
+    return field;
   }
 }

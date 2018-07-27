@@ -18,10 +18,13 @@ public class MatchedInfoMatrix {
   private TermDocsEnum[][] values;
   private float[] fieldBoost;
   private int doc;
+  private int totalMatchedTerms;
+  private boolean[] matchedFields;
 
   public MatchedInfoMatrix(TermDocsEnum[][] matchedInfos, float[] fieldBoost) {
     values = matchedInfos;
     this.fieldBoost = fieldBoost;
+    this.matchedFields = new boolean[matchedInfos.length];
   }
 
   public void setDoc(int doc) {
@@ -45,4 +48,20 @@ public class MatchedInfoMatrix {
 
   public float getFieldBoost(int field) { return fieldBoost[field]; }
 
+
+  public int getTotalMatchedTerms() {
+    return totalMatchedTerms;
+  }
+
+  public void setTotalMatchedTerms(int totalMatchedTerms) {
+    this.totalMatchedTerms = totalMatchedTerms;
+  }
+
+  public boolean getMatchedField(int field) {
+    return matchedFields[field];
+  }
+
+  public void setMatchedField(int field) {
+    this.matchedFields[field] = true;
+  }
 }

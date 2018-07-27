@@ -108,6 +108,14 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
     return termMatchedInfo(field, term).positions(doc());
   }
 
+  public int getTotalMatchedTerms(){
+    return matchedMatrix.getTotalMatchedTerms();
+  }
+
+  public boolean getMatchedField(int field){
+    return matchedMatrix.getMatchedField(field);
+  }
+
   public Explanation explain(Similarity similarity, Query query, int doc) throws IOException {
     Explanation expl = new Explanation();
     isExplain = true;
