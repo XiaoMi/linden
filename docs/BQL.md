@@ -325,9 +325,9 @@ The BQL example
 One plugin example code:
 
 	package com.xiaomi.linden.example;
-	import com.xiaomi.linden.lucene.query.flexiblequery.FlexibleScoreModelStrategy;
+	import com.xiaomi.linden.lucene.query.model.LindenScoreModelStrategy;
 	import java.io.IOException;
-	public class FullMatchBoosted extends FlexibleScoreModelStrategy {
+	public class FullMatchBoosted extends LindenScoreModelStrategy {
 	    private FieldValues<String> name;
 	    private String q;
 	    @Override
