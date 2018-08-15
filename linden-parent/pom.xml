@@ -7,7 +7,7 @@
     <artifactId>linden-parent</artifactId>
     <packaging>pom</packaging>
     <name>linden parent</name>
-    <version>0.1.2</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <properties>
         <lucene.version>4.10.4</lucene.version>
