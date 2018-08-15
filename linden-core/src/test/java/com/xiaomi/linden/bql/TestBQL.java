@@ -715,10 +715,6 @@ public class TestBQL {
     String bql = "select * from linden where title = 'sed' route by replica_key 'nihao'";
     LindenSearchRequest request = compiler.compile(bql).getSearchRequest();
     Assert.assertEquals("nihao", request.getRouteParam().getReplicaRouteKey());
-
-    bql = "select * from linden where title = 'sed' route by replica_key '$replicaKey'";
-    request = compiler.compile(bql).getSearchRequest();
-    Assert.assertFalse(request.isSetRouteParam());
   }
 
   @Test

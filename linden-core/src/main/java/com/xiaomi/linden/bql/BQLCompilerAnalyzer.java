@@ -1375,9 +1375,6 @@ public class BQLCompilerAnalyzer extends BQLBaseListener {
   @Override
   public void exitRoute_replica_clause(BQLParser.Route_replica_clauseContext ctx) {
     String key = unescapeStringLiteral(ctx.STRING_LITERAL());
-    if (isIgnore(key)) {
-      return;
-    }
     valProperty.put(ctx, key);
   }
 
