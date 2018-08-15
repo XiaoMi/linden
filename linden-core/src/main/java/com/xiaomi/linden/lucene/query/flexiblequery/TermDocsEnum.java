@@ -14,16 +14,14 @@
 
 package com.xiaomi.linden.lucene.query.flexiblequery;
 
+import java.io.IOException;
+
 import org.apache.lucene.index.DocsAndPositionsEnum;
 import org.apache.lucene.search.ComplexExplanation;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.similarities.Similarity;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class TermDocsEnum {
 
@@ -33,16 +31,18 @@ public class TermDocsEnum {
 
   protected int doc;
   private int position;
-  private List<Integer> positions;
+  private int[] positions;
   private int freq;
   protected int termPos = -1;
   protected int docFreq = -1;
 
   private int matchedDoc = -1;
   private int matchedPosition = -1;
-  private List<Integer> matchedPositions;
+  private int[] matchedPositions;
   private int matchedFreq = -1;
   private int field;
+  private int initPositionSize = 5;
+
 
   public TermDocsEnum(FlexibleQuery.FlexibleTerm term, int docFreq, DocsAndPositionsEnum postings,
                       Similarity.SimScorer docScorer, int field, int termPos) throws IOException {
@@ -53,11 +53,14 @@ public class TermDocsEnum {
     this.docScorer = docScorer;
     this.field = field;
     this.termPos = termPos;
+    this.positions = new int[initPositionSize];
+    this.matchedPositions = new int[initPositionSize];
   }
 
   public FlexibleQuery.FlexibleTerm term() {
     return term;
   }
+
 
   public float score(int doc) throws IOException {
     if (isMatched(doc)) {
@@ -77,11 +80,16 @@ public class TermDocsEnum {
       return false;
     }
     freq = postings.freq();
-    positions = new ArrayList<>(freq);
-    for (int i = 0; i < freq; i++) {
-      positions.add(postings.nextPosition());
+    if (freq > initPositionSize) {
+      int newSize = 2 * freq;
+      positions = new int[newSize];
+      matchedPositions = new int[newSize];
+      initPositionSize = newSize;
     }
-    position = positions.get(0);
+    for (int i = 0; i < freq; i++) {
+      positions[i] = postings.nextPosition();
+    }
+    position = positions[0];
     return true;
   }
 
@@ -98,8 +106,13 @@ public class TermDocsEnum {
     return doc == matchedDoc ? matchedPosition : -1;
   }
 
-  public List<Integer> positions(int doc) {
-    return doc == matchedDoc ? matchedPositions : null;
+  public int[] positions(int doc) {
+    if (doc == matchedDoc) {
+      int[] matchedPositionsData = new int[matchedFreq];
+      System.arraycopy(matchedPositions, 0, matchedPositionsData, 0, matchedFreq);
+      return matchedPositionsData;
+    }
+    return new int[0];
   }
 
   public String toString() {
@@ -134,10 +147,13 @@ public class TermDocsEnum {
     this.matchedDoc = doc;
     this.matchedPosition = position;
     this.matchedFreq = freq;
-    this.matchedPositions = positions;
+    for (int i = 0; i < matchedFreq; i++) {
+      matchedPositions[i] = positions[i];
+    }
   }
 
   public int getField() {
     return field;
   }
+
 }

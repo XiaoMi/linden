@@ -62,6 +62,8 @@ import com.xiaomi.linden.util.ResponseUtils;
 public class CoreLindenServiceImpl implements LindenService.ServiceIface {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CoreLindenServiceImpl.class);
+  private static final Logger SLOW_LOGGER = LoggerFactory.getLogger("CoreLindenServiceImpl.SlowRequest");
+
 
   private final LindenCluster lindenCluster;
   private final BQLCompiler bqlCompiler;
@@ -79,6 +81,7 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
   private LindenWarmer lindenWarmer;
   private int instanceFuturePoolWaitTimeout;
   private int clusterFuturePoolWaitTimeout;
+  private int slowQueryThresholdMillis;
 
   public CoreLindenServiceImpl(final LindenConfig config) throws Exception {
     Preconditions.checkArgument(config != null, "LindenConfig can not be null.");
@@ -142,6 +145,8 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
     indexingManager = IndexingMangerUtil.initIndexingManger(config, shardingStrategy, lindenCore);
 
     bqlCompiler = new BQLCompiler(config.getSchema());
+
+    this.slowQueryThresholdMillis = config.getSlowQueryThresholdMillis();
 
     try {
       lindenCluster = new CoreLindenCluster(config, shardingStrategy, this);
@@ -222,8 +227,9 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
       public LindenResult apply() {
         LindenResult result = null;
         String logTag = null;
+        long eps = 0;
         try {
-          long eps = sw.elapsed(TimeUnit.MILLISECONDS);
+          eps = sw.elapsed(TimeUnit.MILLISECONDS);
           if (eps > 10) {
             LOGGER.warn("Warning: instanceExecutorPool took " + eps + "ms to start search.");
             if (eps > instanceFuturePoolWaitTimeout) {
@@ -244,12 +250,19 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           logTag = "instanceExceptionalSearch";
         } finally {
           metricsManager.time(sw.elapsed(TimeUnit.NANOSECONDS), logTag);
-          result.setCost((int) sw.elapsed(TimeUnit.MILLISECONDS));
+          long cost = sw.elapsed(TimeUnit.MILLISECONDS);
+          result.setCost((int)cost);
           if (result.isSuccess()) {
-            LOGGER.info("Instance search request succeeded, request: {}, hits: {}, cost: {} ms.", request,
-                        result.getHitsSize(), result.getCost());
+            if (cost >= slowQueryThresholdMillis) {
+              SLOW_LOGGER.warn("Slow request: {}, totalHits: {}, waits: {} ms , cost: {} ms.", request.getOriginQuery(),
+                               result.getTotalHits(), eps, result.getCost());
+            } else {
+              LOGGER.info("Instance search request succeeded, request: {}, hits: {}, cost: {} ms.",
+                          request.getOriginQuery(),
+                          result.getHitsSize(), result.getCost());
+            }
           } else {
-            LOGGER.error("Instance search request failed, request: {}, error: {}, cost: {} ms.", request,
+            LOGGER.error("Instance search request failed, request: {}, error: {}, cost: {} ms.", request.getOriginQuery(),
                          result.getError(), result.getCost());
           }
           return result;
@@ -350,7 +363,9 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           }
           LindenRequest lindenRequest = bqlCompiler.compile(bql);
           if (lindenRequest.isSetSearchRequest()) {
-            result = lindenCore.search(lindenRequest.getSearchRequest());
+            LindenSearchRequest searchRequest = lindenRequest.getSearchRequest();
+            searchRequest.setOriginQuery(bql);
+            result = lindenCore.search(searchRequest);
             if (result.isSuccess()) {
               logTag = "singleInstanceSearch";
             } else {
@@ -445,7 +460,9 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           }
           LindenRequest request = bqlCompiler.compile(bql);
           if (request.isSetSearchRequest()) {
-            result = lindenCluster.search(request.getSearchRequest());
+            LindenSearchRequest searchRequest = request.getSearchRequest();
+            searchRequest.setOriginQuery(bql);
+            result = lindenCluster.search(searchRequest);
             if (result.isSuccess()) {
               logTag = "search";
             } else {
@@ -542,7 +559,9 @@ public class CoreLindenServiceImpl implements LindenService.ServiceIface {
           }
           LindenRequest request = bqlCompiler.compile(bql);
           if (request.isSetSearchRequest()) {
-            result = lindenCluster.search(request.getSearchRequest());
+            LindenSearchRequest searchRequest = request.getSearchRequest();
+            searchRequest.setOriginQuery(bql);
+            result = lindenCluster.search(searchRequest);
             if (result.isSuccess()) {
               logTag = "search";
             } else {

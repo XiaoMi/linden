@@ -58,6 +58,7 @@ public class LindenConfigBuilder {
   public static final String SEARCH_THREAD_POOL_JSON_CONFIG = "search.thread.pool.json.config";
   public static final String ENABLE_SOURCE_FIELD_CACHE = "enable.source.field.cache";
   public static final String INDEX_SEARCHER_PARALLEL_THREAD_NUM = "index.searcher.parallel.thread.num";
+  public static final String SLOW_QUERY_THRESHOLD_MILLIS = "slow.query.threshold.millis";
 
 
   protected static class FieldInfo {
@@ -119,6 +120,7 @@ public class LindenConfigBuilder {
     fieldMap.put(SEARCH_THREAD_POOL_JSON_CONFIG, new FieldInfo("SearchThreadPoolConfig", String.class));
     fieldMap.put(ENABLE_SOURCE_FIELD_CACHE, new FieldInfo("EnableSourceFieldCache", boolean.class));
     fieldMap.put(INDEX_SEARCHER_PARALLEL_THREAD_NUM, new FieldInfo("IndexSearcherParallelThreadNum", int.class));
+    fieldMap.put(SLOW_QUERY_THRESHOLD_MILLIS,new FieldInfo("SlowQueryThresholdMillis",int.class));
 
   }
 

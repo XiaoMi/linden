@@ -34,6 +34,16 @@
             </Policies>
             <DefaultRolloverStrategy max="7"/>
         </RollingFile>
+        <RollingFile name="slow" fileName="${sys:log.path}/linden-slow.log"
+            filePattern="${sys:log.path}/linden-slow-%d{yyyy-MM-dd}-%i.log" >
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p %M(%F:%L) - %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+            <DefaultRolloverStrategy max="7"/>
+        </RollingFile>
     </appenders>
     <loggers>
         <root level="info">
@@ -44,5 +54,9 @@
             <AppenderRef ref="index" level="info" />
             <AppenderRef ref="common" level="error" />
         </Logger>
+        <Logger name="com.xiaomi.linden.service.CoreLindenServiceImpl.SlowRequest" level="info" additivity="false">
+            <AppenderRef ref="slow"/>
+        </Logger>
+
     </loggers>
 </configuration>

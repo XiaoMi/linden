@@ -16,7 +16,6 @@ package com.xiaomi.linden.lucene.query.flexiblequery;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
@@ -104,7 +103,7 @@ abstract public class FlexibleScoreModelStrategy extends LindenScoreModelStrateg
     return termMatchedInfo(field, term).position(doc());
   }
 
-  public List<Integer> positions(int field, int term) {
+  public int[] positions(int field, int term) {
     return termMatchedInfo(field, term).positions(doc());
   }
 

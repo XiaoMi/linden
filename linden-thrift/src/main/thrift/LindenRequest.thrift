@@ -305,6 +305,7 @@ struct LindenSearchRequest {
     14: optional list<string> sourceFields,
     15: optional list<string> indexNames,
     16: optional GroupParam groupParam,
+    17: optional string originQuery,
 }
 
 struct LindenDeleteRequest {

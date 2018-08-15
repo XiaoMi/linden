@@ -93,6 +93,7 @@ public class LindenConfig {
   private boolean enableSourceFieldCache;
   private int indexSearcherParallelThreadNum;
   private String lindenWarmerFactory;
+  private int slowQueryThresholdMillis;
 
   private Map<String, LindenFieldSchema> fieldSchemaMap = new HashMap<>();
 
@@ -115,6 +116,7 @@ public class LindenConfig {
     this.indexManagerThreadNum = 11;
     this.enableSourceFieldCache = false;
     this.indexSearcherParallelThreadNum = 2 * Runtime.getRuntime().availableProcessors();
+    this.slowQueryThresholdMillis = 300;
   }
 
   public void putToProperties(String key, String val) {
@@ -431,6 +433,14 @@ public class LindenConfig {
   public LindenConfig setLindenWarmerFactory(String lindenWarmerFactory) {
     this.lindenWarmerFactory = lindenWarmerFactory;
     return this;
+  }
+
+  public int getSlowQueryThresholdMillis() {
+    return slowQueryThresholdMillis;
+  }
+
+  public void setSlowQueryThresholdMillis(int slowQueryThresholdMillis) {
+    this.slowQueryThresholdMillis = slowQueryThresholdMillis;
   }
 
   public LindenFieldSchema getFieldSchema(String field) {
